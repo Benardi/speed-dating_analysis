@@ -1,0 +1,45 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+```
+
+```{r}
+data <- read_csv(here("data/speed-dating.csv"),
+                 progress = FALSE,
+                 col_types =cols(.default = col_integer(),
+                                 int_corr = col_double(),
+                                 field = col_character(),
+                                 from = col_character(),
+                                 career = col_character(),
+                                 attr = col_double(),
+                                 sinc = col_double(),
+                                 intel = col_double(),
+                                 fun = col_double(),
+                                 amb = col_double(),
+                                 shar = col_double(),
+                                 like = col_double(),
+                                 prob = col_double(),
+                                 match_es = col_double(),
+                                 attr3_s = col_character(),
+                                 sinc3_s = col_character(),
+                                 intel3_s = col_character(),
+                                 fun3_s = col_character(),
+                                 amb3_s = col_character()))
+
+data %>%
+  glimpse()
+```
+
+```{r}
+data %>%
+  na.omit(race) %>%
+  ggplot(aes(race, ..prop..)) +
+  geom_bar()
+```
+
