@@ -13,8 +13,10 @@ output:
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(scatterplot3d)
 library(tidyverse)
 library(GGally)
+library(broom)
 library(here)
 theme_set(theme_bw())
 ```
@@ -59,17 +61,10 @@ data %>%
 * There were no native americans involved (code = 5) 
 
 ```{r}
-data %>%
-  na.omit(race) %>%
-  ggplot(aes(factor(samerace), like)) +
-   geom_count()
-```
-
-```{r}
 require(GGally)
 
 temp <- data %>% 
-  select(like,fun,amb,attr,sinc,intel,
+  select(like,fun,amb,attr,sinc,intel,shar,
          fun3_s,amb3_s,attr3_s,sinc3_s,intel3_s) %>% 
     na.omit()
 
@@ -78,10 +73,55 @@ ggcorr(temp, palette = "RdBu", label = TRUE,
   ggtitle("Correlation plot for employed variables")
 ```
 
+* What a person (p1) believes about herself/himself doesn't show promising results in terms of correlation
+* Among what p1 thinks about p2 how *ambitious* p1 thinks p2 is shows the weakest correlation with how much p1 likes p2.
+* Intelligence has interesting interactions with sincerity and ambition.
+
 ```{r}
+temp <- data %>% 
+  select(like,fun,amb,attr,sinc,intel,shar) %>% 
+    na.omit()
+
+temp %>% ## Put predictors on same scale
+   mutate_at(.vars = vars(amb,attr,sinc,intel,shar),
+             .funs = funs(scale(.))) -> temp
+
 ggpairs(temp, 
         upper = list(continuous = "density",  combo = "box_no_facet"), 
-        lower = list(continuous = "blank"),
-        axisLabels = 'show',progress = F)
+        lower = list(continuous = wrap("cor", size=5)),
+        axisLabels = 'show',progress = F) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+temp %>%
+  ggplot(aes(fun, like)) +
+   stat_density2d(aes(fill = ..level..), geom = "polygon")
+```
+
+* Intuition would suggest a positive interaction between being seen as fun and being liked, that interaction being of considerable magnitude.
+
+```{r}
+temp %>%
+  ggplot(aes(attr, like)) +
+   stat_density2d(aes(fill = ..level..), geom = "polygon")
+```
+
+* Intuition would suggest a positive interaction between being seen as attractive and being liked (no surprise there), that interaction being of considerable magnitude.
+
+# Testing Regression Models
+
+```{r}
+mod <- lm(like ~ fun + attr + shar + sinc + intel + intel * sinc , data = temp)
+summary(mod, conf.int = TRUE) 
+``` 
+
+
+```{r}
+tibble::as_tibble(rownames = "id",confint(mod)) 
+```
+
+```{r}
+
 ```
 
