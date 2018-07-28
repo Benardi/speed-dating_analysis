@@ -1,13 +1,25 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Regression on speed dating data"
+author: "José Benardi de Souza Nunes"
+date: 28/07/2018
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
+library(GGally)
 library(here)
 theme_set(theme_bw())
 ```
+
+# Data Overview
 
 ```{r}
 data <- read_csv(here("data/speed-dating.csv"),
@@ -26,11 +38,11 @@ data <- read_csv(here("data/speed-dating.csv"),
                                  like = col_double(),
                                  prob = col_double(),
                                  match_es = col_double(),
-                                 attr3_s = col_character(),
-                                 sinc3_s = col_character(),
-                                 intel3_s = col_character(),
-                                 fun3_s = col_character(),
-                                 amb3_s = col_character()))
+                                 attr3_s = col_double(),
+                                 sinc3_s = col_double(),
+                                 intel3_s = col_double(),
+                                 fun3_s = col_double(),
+                                 amb3_s = col_double()))
 
 data %>%
   glimpse()
@@ -41,5 +53,35 @@ data %>%
   na.omit(race) %>%
   ggplot(aes(race, ..prop..)) +
   geom_bar()
+```
+
+* Most of the participants are white (code = 2)
+* There were no native americans involved (code = 5) 
+
+```{r}
+data %>%
+  na.omit(race) %>%
+  ggplot(aes(factor(samerace), like)) +
+   geom_count()
+```
+
+```{r}
+require(GGally)
+
+temp <- data %>% 
+  select(like,fun,amb,attr,sinc,intel,
+         fun3_s,amb3_s,attr3_s,sinc3_s,intel3_s) %>% 
+    na.omit()
+
+ggcorr(temp, palette = "RdBu", label = TRUE,
+       hjust = 0.75, label_size = 3, nbreaks = 5) +
+  ggtitle("Correlation plot for employed variables")
+```
+
+```{r}
+ggpairs(temp, 
+        upper = list(continuous = "density",  combo = "box_no_facet"), 
+        lower = list(continuous = "blank"),
+        axisLabels = 'show',progress = F)
 ```
 
