@@ -13,14 +13,13 @@ output:
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
-library(scatterplot3d)
 library(tidyverse)
 library(ggfortify)
 library(modelr)
 library(GGally)
 library(broom)
 library(here)
-library(scatterplot3d)
+
 theme_set(theme_bw())
 ```
 
@@ -68,7 +67,7 @@ data %>%
 require(GGally)
 
 temp <- data %>% 
-  select(like,fun,amb,attr,sinc,intel,shar,
+  select(like,fun,amb,attr,sinc,intel,shar,prob,
          fun3_s,amb3_s,attr3_s,sinc3_s,intel3_s) %>% 
     na.omit()
 
@@ -83,7 +82,7 @@ ggcorr(temp, palette = "RdBu", label = TRUE,
 
 ```{r}
 temp <- data %>% 
-  select(like,fun,attr,sinc,intel,shar) %>% 
+  select(like,fun,attr,sinc,intel,shar,prob) %>% 
     na.omit()
 
 ggpairs(temp, 
@@ -93,15 +92,10 @@ ggpairs(temp,
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-```{r}
-temp %>% ## Put predictors on same scale
-   mutate_at(.vars = vars(fun,attr,sinc,intel,shar),
-             .funs = funs(scale(.))) -> temp
+Regarding the relatinship with the response variable "**like**":
 
-temp %>% 
-  sample_n(10)
-```
-
+* Looking at the bidimensional density plot**fun** and **attr** have a cleaner and clearer connection with **like** as expected from what we saw in terms of correlation.
+* Despite unpromising results in correlation **prob** has a somewhat clean interaction with **like** in terms of bidimensional density plot. Might be worth looking into.
 
 ```{r}
 temp %>%
@@ -122,11 +116,19 @@ temp %>%
 # Testing Regression Models
 
 ```{r}
+temp %>% ## Put predictors on same scale
+   mutate_at(.vars = vars(fun,attr,sinc,intel,shar),
+             .funs = funs(scale(.))) -> temp
+
+temp %>% 
+  sample_n(10)
+```
+
+```{r}
 t <- data %>% na.omit()
-mod <- lm(like ~ factor(from) * fun * prob * order + 
-            factor(from) * attr * prob * order + 
-            factor(from) * shar * prob + 
-            factor(from) * sinc * prob * order, data = t)
+mod <- lm(like ~  fun + attr + shar + prob ,
+          data = t)
+
 glance(mod) 
 ``` 
 
@@ -134,11 +136,6 @@ glance(mod)
 tibble::as_tibble(rownames = "coefficient",
                   confint(mod)) 
 ```
-
-```{r}
-temp %>% glimpse()
-```
-
 
 ```{r}
 tibble::as_tibble(rownames = "coefficient",
@@ -149,18 +146,106 @@ tibble::as_tibble(rownames = "coefficient",
   geom_hline(yintercept = 0, colour = "darkorange")
 ```
 
+## Residual Analysis
+
 ```{r}
-termplot(mod,partial.resid=TRUE, col.res = "darkgrey")
+t$mod.res <- resid(mod)
+t$std.resid = rstandard(mod)
+
+t %>%
+  ggplot(aes(like, mod.res)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0,
+             color = "red") +
+  labs(x = "Response Variable (like)", y = "Residue") +
+  ggtitle("Residual Plot")
 ```
 
 ```{r}
-autoplot(mod)
+mod %>%
+  ggplot(aes(.fitted, .resid)) + 
+  geom_point() +
+  stat_smooth(method="loess") + 
+  geom_hline(yintercept=0, col="red", linetype="dashed") + 
+  xlab("Fitted values") + ylab("Residuals") + 
+  ggtitle("Residual vs Fitted Plot")
+```
+
+
+```{r}
+y <- quantile(t$std.resid[!is.na(t$std.resid)], c(0.25, 0.75))
+x <- qnorm(c(0.25, 0.75))
+slope <- diff(y)/diff(x)
+int <- y[1L] - slope * x[1L]
+
+t %>%
+  ggplot(aes(sample=std.resid)) +
+  stat_qq(shape=1, size=3) +      # open circles
+  labs(title="Normal Q-Q",        # plot title
+  x="Theoretical Quantiles",      # x-axis label
+  y="Standardized Residuals") +   # y-axis label
+  geom_abline(slope = slope,
+              intercept = int,
+              linetype="dashed")  # dashed reference line
 ```
 
 ```{r}
-# library(rgl)
-# with(temp,plot3d(like,shar,attr, col="blue", size=1, type="s", main="3D Quadratic Model Fit with Log of Income excl. Women^2"))
-
-
+mod %>%
+  ggplot(aes(.fitted, 
+             sqrt(abs(.stdresid)))) + 
+  geom_point(na.rm=TRUE) + 
+  stat_smooth(method="loess",
+              na.rm = TRUE) +
+  labs(title = "Scale-Location",
+       x= "Fitted Value",
+       y = expression(sqrt("|Standardized residuals|")))
 ```
+
+```{r}
+mod %>%
+  ggplot(aes(.hat, .stdresid)) + 
+  geom_point(aes(size=.cooksd), na.rm=TRUE) +
+  stat_smooth(method="loess", na.rm=TRUE) +
+  xlab("Leverage")+ylab("Standardized Residuals") + 
+  ggtitle("Residual vs Leverage Plot") + 
+  scale_size_continuous("Cook's Distance", range=c(1,5)) +    
+  theme(legend.position="bottom")
+```
+
+```{r}
+mod %>%
+  ggplot(aes(.hat, .cooksd)) + 
+  geom_point(na.rm=TRUE) + 
+  stat_smooth(method="loess", na.rm=TRUE) + 
+  xlab("Leverage hii")+ylab("Cook's Distance") + 
+  ggtitle("Cook's dist vs Leverage hii/(1-hii)") + 
+  geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
+```
+
+<!-- ```{r} -->
+<!-- # library(rgl) -->
+<!-- # with(temp,plot3d(like,shar,attr, col="blue", size=1, type="s", main="3D Quadratic Model Fit with Log of Income excl. Women^2")) -->
+
+
+<!-- ``` -->
+
+<!-- ## We gotta pump up those numbers -->
+
+<!-- ```{r} -->
+<!-- t <- data %>% na.omit() -->
+<!-- mod <- lm(like ~ factor(from) * fun * prob * order +  -->
+<!--             factor(from) * attr * prob * order +  -->
+<!--             factor(from) * shar * prob * order +  -->
+<!--             factor(from) * sinc * prob * order, data = t) -->
+<!-- glance(mod)  -->
+<!-- ```  -->
+<!-- ```{r} -->
+<!-- sqrt(mean(mod$residuals^2)) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- autoplot(mod) -->
+<!-- ``` -->
+
+
 
