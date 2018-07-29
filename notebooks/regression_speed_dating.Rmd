@@ -14,9 +14,9 @@ output:
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
-library(ggfortify)
 library(modelr)
 library(GGally)
+library(caret)
 library(broom)
 library(here)
 
@@ -47,7 +47,11 @@ data <- read_csv(here("data/speed-dating.csv"),
                                  sinc3_s = col_double(),
                                  intel3_s = col_double(),
                                  fun3_s = col_double(),
-                                 amb3_s = col_double())) 
+                                 amb3_s = col_double())) %>%
+  mutate(from = as.numeric(factor(from)),
+         gender = as.numeric(factor(gender)),
+         samerace = as.numeric(factor(samerace)))
+
 data %>%
   glimpse()
 ```
@@ -71,7 +75,8 @@ data %>%
   select(like,fun,amb,attr,
          sinc,intel,shar,prob,
          fun3_s,amb3_s,attr3_s,
-         sinc3_s,intel3_s) %>% 
+         sinc3_s,intel3_s,samerace,
+         gender,from) %>% 
   na.omit() %>%
   ggcorr(palette = "RdBu", label = TRUE,
        hjust = 0.75, label_size = 3, nbreaks = 5) +
@@ -124,14 +129,13 @@ data %>%
 data %>%  # Keep only candidate and response variables
   select(from, fun, prob, order,
          attr, sinc, prob, shar, 
-         intel, like) %>%
-  mutate(from = factor(from)) %>%
+         intel, like, gender, samerace) %>%
   na.omit() -> data  # remove NAs
 
 data %>% ## Put numeric predictor variables on same scale 
    mutate_at(.vars = vars(fun, prob, order,attr,
                           sinc, prob, shar,intel),
-             .funs = funs(scale(.))) -> data_scaled
+             .funs = funs(as.numeric(scale(.)))) -> data_scaled
 
 data_scaled %>%
   glimpse()
@@ -144,7 +148,7 @@ data_scaled %>%
 <br>
 
 ```{r}
-set.seed(101)
+set.seed(101) # We set the set for reason of reproducibility
 
 ## Adding surrogate key to dataframe
 data_scaled$id <- 1:nrow(data_scaled)
@@ -170,7 +174,7 @@ testing %>%
 ## Naive Model
 
 ```{r}
-mod <- lm(like ~  fun + attr + shar + prob ,
+mod <- lm(like ~ fun + attr + shar + sinc + prob + sinc * intel, 
           data = training)
 
 glance(mod) 
@@ -279,14 +283,16 @@ mod %>%
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
 ```
 
-<!-- ## Obviously Overfitted Model -->
+## Cross Validation
 
-<!-- ```{r} -->
-<!-- t <- data %>% na.omit() -->
-<!-- mod <- lm(like ~ factor(from) * fun * prob * order + -->
-<!--             factor(from) * attr * prob * order + -->
-<!--             factor(from) * shar * prob * order + -->
-<!--             factor(from) * sinc * prob * order, data = training) -->
-<!-- glance(mod) -->
-<!-- ``` -->
+#### Validation Set Approach
 
+```{r}
+predictions <- mod %>% predict(testing)
+
+data.frame( R2 = caret::R2(predictions, testing$like),
+            RMSE = caret::RMSE(predictions, testing$like),
+            MAE = caret::MAE(predictions, testing$like),
+            ERR = caret::RMSE(predictions, testing$like)/
+              mean(testing$like))
+```
