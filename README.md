@@ -2,12 +2,12 @@
 Analysis through regression on speed dating data 
 
 ## The data
-We have data describing 5000 4 minutes speed dates involving 310 american young adults. The original data were collected by Columbia Business professors$
+We have data describing 5000 4 minutes speed dates involving 310 american young adults. The original data were collected by Columbia Business professors
 
 The participants had several 4 minutes dates by night. After each one, they filled forms evaluating those they had dated. Each row in the data represents one of these dates.
 
 ## The questions
-What attracts at first sight? And how this changes on different genders? People of different backgrounds? What characteristics are more and less important for a man/woman to be noticed? $
+What attracts at first sight? And how this changes on different genders? People of different backgrounds? What characteristics are more and less important for a man/woman to be noticed? 
 
 ## The variables
 
@@ -25,7 +25,7 @@ What attracts at first sight? And how this changes on different genders? People 
 - race : race of p1. The code is Black/African American=1; European/Caucasian-American=2; Latino/Hispanic American=3; Asian/Pacific Islander/Asian-American=4; Native American=5; Other=6
 - from : from where p1 comes from
 - career : what career p1 wants to follow
-- sports, tvsports, exercise, dining, museums, art, hiking, gaming, clubbing, reading, tv, theater, movies, concerts, music, shopping, yoga : From 1 to 10, how interested p1 is in each one of these activities$
+- sports, tvsports, exercise, dining, museums, art, hiking, gaming, clubbing, reading, tv, theater, movies, concerts, music, shopping, yoga : From 1 to 10, how interested p1 is in each one of these activities
 - attr : how attractive p1 thinks p2 is
 - sinc : how sincere  p1 thinks p2 is
 - intel : how smart p1 thinks p2 is
@@ -42,6 +42,6 @@ What attracts at first sight? And how this changes on different genders? People 
 
 ### The form
 
-Good part of the data come from here:
+Good part of the data comes from here:
 ![formulário preenchido pelos usuários](data/form.png "O formulário")
 

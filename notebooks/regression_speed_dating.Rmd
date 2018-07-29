@@ -14,7 +14,7 @@ output:
 
 <br>
 
-> This report contain regression models created based on data describing  5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
+> This report contains regression models created based on data describing  5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
 
 <br>
 
@@ -30,37 +30,6 @@ theme_set(theme_bw())
 ```
 
 # Data Overview
-
-```{r}
-data <- read_csv(here("data/speed-dating.csv"),
-                 progress = FALSE,
-                 col_types =cols(.default = col_integer(),
-                                 int_corr = col_double(),
-                                 field = col_character(),
-                                 from = col_character(),
-                                 career = col_character(),
-                                 attr = col_double(),
-                                 samerace = col_character(),
-                                 sinc = col_double(),
-                                 intel = col_double(),
-                                 fun = col_double(),
-                                 amb = col_double(),
-                                 shar = col_double(),
-                                 like = col_double(),
-                                 prob = col_double(),
-                                 match_es = col_double(),
-                                 attr3_s = col_double(),
-                                 sinc3_s = col_double(),
-                                 intel3_s = col_double(),
-                                 fun3_s = col_double(),
-                                 amb3_s = col_double())) %>%
-  mutate(from = as.numeric(factor(from)),
-         gender = as.numeric(factor(gender)),
-         samerace = as.numeric(factor(samerace)))
-
-data %>%
-  glimpse()
-```
 
 <br>
 
@@ -97,6 +66,39 @@ data %>%
 <br>
 
 ```{r}
+data <- read_csv(here("data/speed-dating.csv"),
+                 progress = FALSE,
+                 col_types =cols(.default = col_integer(),
+                                 int_corr = col_double(),
+                                 field = col_character(),
+                                 from = col_character(),
+                                 career = col_character(),
+                                 attr = col_double(),
+                                 samerace = col_character(),
+                                 sinc = col_double(),
+                                 intel = col_double(),
+                                 fun = col_double(),
+                                 amb = col_double(),
+                                 shar = col_double(),
+                                 like = col_double(),
+                                 prob = col_double(),
+                                 match_es = col_double(),
+                                 attr3_s = col_double(),
+                                 sinc3_s = col_double(),
+                                 intel3_s = col_double(),
+                                 fun3_s = col_double(),
+                                 amb3_s = col_double())) %>%
+  mutate(from = as.numeric(factor(from)),
+         gender = as.numeric(factor(gender)),
+         samerace = as.numeric(factor(samerace)))
+
+data %>%
+  glimpse()
+```
+
+<br>
+
+```{r}
 data %>%
   na.omit(race) %>%
   ggplot(aes(race, ..prop..)) +
@@ -104,7 +106,7 @@ data %>%
 ```
 
 * Most of the participants are white (code = 2)
-* There were no native americans involved (code = 5) 
+* There were no Native Americans involved (code = 5) 
 
 ## Choosing promising candidate variables
 
@@ -140,10 +142,10 @@ data %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-Regarding the relatinship with the response variable "**like**":
+Regarding the relationship with the response variable "**like**":
 
-* Looking at the bidimensional density plots the variables **fun** and **attr** have a cleaner and clearer connection with **like** as expected from what we saw in terms of correlation.
-* Despite unpromising results in correlation **prob** has a somewhat clean interaction with **like** in terms of bidimensional density plot. Might be worth looking into.
+* Looking at the bi-dimensional density plots the variables **fun** and **attr** have a cleaner and clearer connection with **like** as expected from what we saw in terms of correlation.
+* Despite unpromising results in correlation **prob** has a somewhat clean interaction with **like** in terms of bi-dimensional density plot. Might be worth looking into.
 
 <br>
 
@@ -230,7 +232,27 @@ testing %>%
 
 <br>
 
+Our evaluation of the regressions can be divided as follow:
+
+* Train the model with the training data
+     + Observe the R² and adjusted R² 
+     
+* Analyze the training residue
+* Use the test data to cross validate our model.
+
+```
+Our response variable is the variable like (How much participant 1 liked participant 2).
+```
+
+<br>
+
 ## Intelligence related Model
+
+<br>
+
+In this model we will include the main predictor variables (according to what we've seen in terms of correlation and some tweaking with the predictors that is not here). We'll also try to observe the effect of intelligence in sincerity.  
+
+* **sinc * intel** refers to the interaction between sincerity and intelligence.
 
 ```{r}
 mod <- lm(like ~ fun + attr + shar + sinc + prob + sinc * intel + intel, 
@@ -239,11 +261,16 @@ mod <- lm(like ~ fun + attr + shar + sinc + prob + sinc * intel + intel,
 glance(mod) 
 ``` 
 
+* We got a modest 0.68 R² and adjusted R² approximately. This means that this model explain approximately 68% of the response variable variability.
+
 ```{r}
 tidy(mod, 
      conf.int = TRUE, 
      conf.level = 0.95)
 ```
+
+* The model rendered a positive intercept around [6.02472161,	6.10340843], the model suggests that  _a priori_ around *6* (between [6.02472161,	6.10340843] to be precise) is how participant 1 would describe how much him/her likes participant 2.
+* The confidence interval of the predictors is also there, but let's resort to data visualization for convenience. 
 
 ```{r}
 tidy(mod, 
@@ -256,9 +283,18 @@ tidy(mod,
   geom_hline(yintercept = 0, colour = "darkred")
 ```
 
+* All of the estimates (**attr, fun, intel, prob, shar, sinc, sinc * intel**) are significant, as none of them intersect 0.
+* **attr, fun, intel, prob, shar,** and **sinc** have a positive effect, the model suggests that the higher these predictors the higher **like**.
+* **sinc * intel** has a negative effect, the model suggests that the higher this predictors the lower **like**. Being smart and sincere seems to be a bad combination.
+* In terms of relevance however **attr** is the clear winner, i.e. it matters a lot more whether your participant 1 thinks you're attractive.
+    + **Intel** and **sinc** count among the less significant predictors of positive effect.
+    + **sinc * intel** appears to not be relevant.
+
+<br>
+
 ### Residual Analysis
 
-Let's keep the residue data in a specific dataframe
+Let's keep the residue data in a specific data frame
 
 ```{r}
 mod.res <- resid(mod)
@@ -278,9 +314,15 @@ resid_data %>%
   geom_point(alpha = 0.4) +
   geom_hline(yintercept = 0,
              color = "red") +
-  labs(x = "Response Variable (like)", y = "Residue") +
+  labs(x = "Response Variable (like)", y = "Residuals") +
   ggtitle("Residual Plot")
 ```
+
+* There's a clear pattern in the residuals.
+* They’re not symmetrically distributed, nor they tend to cluster towards the middle of the plot.
+* They’re relatively clustered around the lower single digits of the y-axis (e.g., ideally would be 0.5 or 1.5), while not ideal it could be worse.
+
+> The model doesn't seem to fit the data that well
 
 ```{r}
 mod %>%
@@ -292,6 +334,9 @@ mod %>%
   ggtitle("Residual vs Fitted Plot")
 ```
 
+* There's no distinctive pattern in the plot, therefore this suggests that there wasn't non-linear patterns in the data that couldn't be explained by the model and were left out in the residuals.
+
+> The data doesn't seem to demand a non-linear regression.
 
 ```{r}
 y <- quantile(resid_data$std.resid[!is.na(resid_data$std.resid)], c(0.25, 0.75))
@@ -312,6 +357,10 @@ resid_data %>%
               linetype="dashed")  # dashed reference line
 ```
 
+* There's some considerable deviation from the normal distribution on the left side of the qq plot, otherwise the the standardized residuals are not that far way from the normal distribution.
+
+> This suggests that there would be a better combination of predictors to be found, although the current one still explains a sizable portion of the data variability .
+
 ```{r}
 mod %>%
   ggplot(aes(.fitted, 
@@ -324,6 +373,11 @@ mod %>%
        y = expression(sqrt("|Standardized residuals|")))
 ```
 
+* The residuals appear to be somewhat randomly spread, however there's a tendency in them to form a parabole. 
+* There's some degree of violation on the assumption of equal variance (homoscedasticity).
+
+> Confirmation of the qqplot results.
+
 ```{r}
 mod %>%
   ggplot(aes(.hat, .stdresid)) + 
@@ -335,6 +389,11 @@ mod %>%
   theme(legend.position="bottom")
 ```
 
+* All the occurrences have low values of Cook's Distance (below 0.1).
+
+> There are no "outliers"/extreme values who are influential cases (i.e., subjects) and would therefore have an undue influence on the regression line.
+
+
 ```{r}
 mod %>%
   ggplot(aes(.hat, .cooksd)) + 
@@ -344,6 +403,10 @@ mod %>%
   ggtitle("Cook's dist vs Leverage hii/(1-hii)") + 
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
 ```
+
+> Plot confirms results of Residual vs Leverage Plot
+
+<br>
 
 ### Cross Validation
 
@@ -360,6 +423,16 @@ data.frame( R2 = caret::R2(predictions, testing$like),
             ERR = caret::RMSE(predictions, testing$like)/
               mean(testing$like))
 ```
+
+Now let's talk about the results taken from the test data (the most meaningful).
+
+* We got a modest 0.65 R² and adjusted R² approximately. This means that this model explain approximately 65% of the response variable variability.
+* The average difference between the observed known outcome values and the values predicted by the model (RMSE) was of approximately 1.072408.
+    + Our model would miss the mark by approximately 1.07 (RMSE), that is if P1 rated P2 8.07 our model would probably say predict that P1 would rate P2 7 or 9.14. 
+* The average absolute difference between observed and predicted outcomes (MAE) was approximately 0.7954258.
+* The prediction error rate (ERR) was 0.1773431.
+
+>  While not completely bad our model certainly left a lot of room for improvement.
 
 ## Gender related Model
 
@@ -389,7 +462,7 @@ tidy(mod,
 
 ### Residual Analysis
 
-Let's keep the residue data in a specific dataframe
+Let's keep the residue data in a specific data frame
 
 ```{r}
 mod.res <- resid(mod)
