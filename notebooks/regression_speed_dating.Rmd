@@ -79,19 +79,25 @@ ggcorr(temp, palette = "RdBu", label = TRUE,
 
 ```{r}
 temp <- data %>% 
-  select(like,fun,amb,attr,sinc,intel,shar) %>% 
+  select(like,fun,attr,sinc,intel,shar) %>% 
     na.omit()
 
-temp %>% ## Put predictors on same scale
-   mutate_at(.vars = vars(amb,attr,sinc,intel,shar),
-             .funs = funs(scale(.))) -> temp
-
 ggpairs(temp, 
-        upper = list(continuous = "density",  combo = "box_no_facet"), 
+        upper = list(continuous = "density"), 
         lower = list(continuous = wrap("cor", size=5)),
         axisLabels = 'show',progress = F) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
+```{r}
+temp %>% ## Put predictors on same scale
+   mutate_at(.vars = vars(fun,attr,sinc,intel,shar),
+             .funs = funs(scale(.))) -> temp
+
+temp %>% 
+  sample_n(10)
+```
+
 
 ```{r}
 temp %>%
@@ -116,9 +122,18 @@ mod <- lm(like ~ fun + attr + shar + sinc + intel + intel * sinc , data = temp)
 summary(mod, conf.int = TRUE) 
 ``` 
 
+```{r}
+tibble::as_tibble(rownames = "id",
+                  confint(mod)) 
+```
 
 ```{r}
-tibble::as_tibble(rownames = "id",confint(mod)) 
+tibble::as_tibble(rownames = "id",
+                  confint(mod)) %>%
+  filter(id != "(Intercept)") %>%
+  ggplot(aes(id,ymin = `2.5 %`, ymax = `97.5 %`)) +
+  geom_errorbar(width = 0.6) +
+  geom_hline(yintercept = 0, colour = "darkorange") 
 ```
 
 ```{r}
