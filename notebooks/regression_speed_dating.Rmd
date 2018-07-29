@@ -148,11 +148,22 @@ tibble::as_tibble(rownames = "coefficient",
 
 ## Residual Analysis
 
-```{r}
-t$mod.res <- resid(mod)
-t$std.resid = rstandard(mod)
+Let's keep the residue data in a specific dataframe
 
-t %>%
+```{r}
+mod.res <- resid(mod)
+std.resid <- rstandard(mod)
+like <- t$like
+
+resid_data <- data.frame(mod.res,std.resid,like,
+                       stringsAsFactors=FALSE)
+resid_data %>% 
+  sample_n(10)
+```
+
+
+```{r}
+resid_data %>%
   ggplot(aes(like, mod.res)) +
   geom_point(alpha = 0.4) +
   geom_hline(yintercept = 0,
@@ -173,7 +184,7 @@ mod %>%
 
 
 ```{r}
-y <- quantile(t$std.resid[!is.na(t$std.resid)], c(0.25, 0.75))
+y <- quantile(resid_data$std.resid[!is.na(resid_data$std.resid)], c(0.25, 0.75))
 x <- qnorm(c(0.25, 0.75))
 slope <- diff(y)/diff(x)
 int <- y[1L] - slope * x[1L]
