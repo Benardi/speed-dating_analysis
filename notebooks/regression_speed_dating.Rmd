@@ -15,9 +15,12 @@ output:
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(scatterplot3d)
 library(tidyverse)
+library(ggfortify)
+library(modelr)
 library(GGally)
 library(broom)
 library(here)
+library(scatterplot3d)
 theme_set(theme_bw())
 ```
 
@@ -44,7 +47,8 @@ data <- read_csv(here("data/speed-dating.csv"),
                                  sinc3_s = col_double(),
                                  intel3_s = col_double(),
                                  fun3_s = col_double(),
-                                 amb3_s = col_double()))
+                                 amb3_s = col_double())) %>%
+  mutate( age_dif =abs(age - age_o))
 
 data %>%
   glimpse()
@@ -118,25 +122,43 @@ temp %>%
 # Testing Regression Models
 
 ```{r}
-mod <- lm(like ~ fun + attr + shar + sinc + intel + intel * sinc , data = temp)
-summary(mod, conf.int = TRUE) 
+t <- data %>% na.omit()
+mod <- lm(like ~ factor(from) * fun + factor(from) * attr + 
+          factor(from) * shar + factor(from) * prob + factor(from) * sinc , data = t)
+glance(mod) 
 ``` 
 
 ```{r}
-tibble::as_tibble(rownames = "id",
+tibble::as_tibble(rownames = "coefficient",
                   confint(mod)) 
 ```
 
 ```{r}
-tibble::as_tibble(rownames = "id",
+temp %>% glimpse()
+```
+
+
+```{r}
+tibble::as_tibble(rownames = "coefficient",
                   confint(mod)) %>%
-  filter(id != "(Intercept)") %>%
-  ggplot(aes(id,ymin = `2.5 %`, ymax = `97.5 %`)) +
-  geom_errorbar(width = 0.6) +
-  geom_hline(yintercept = 0, colour = "darkorange") 
+  filter(coefficient != "(Intercept)") %>%
+  ggplot(aes(coefficient,ymin = `2.5 %`, ymax = `97.5 %`)) +
+  geom_errorbar() +
+  geom_hline(yintercept = 0, colour = "darkorange")
 ```
 
 ```{r}
+termplot(mod,partial.resid=TRUE, col.res = "darkgrey")
+```
+
+```{r}
+autoplot(mod)
+```
+
+```{r}
+# library(rgl)
+# with(temp,plot3d(like,shar,attr, col="blue", size=1, type="s", main="3D Quadratic Model Fit with Log of Income excl. Women^2"))
+
 
 ```
 
