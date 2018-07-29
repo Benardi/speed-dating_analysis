@@ -123,8 +123,10 @@ temp %>%
 
 ```{r}
 t <- data %>% na.omit()
-mod <- lm(like ~ factor(from) * fun + factor(from) * attr + 
-          factor(from) * shar + factor(from) * prob + factor(from) * sinc , data = t)
+mod <- lm(like ~ factor(from) * fun * prob * order + 
+            factor(from) * attr * prob * order + 
+            factor(from) * shar * prob + 
+            factor(from) * sinc * prob * order, data = t)
 glance(mod) 
 ``` 
 
