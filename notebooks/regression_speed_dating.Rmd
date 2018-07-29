@@ -12,6 +12,12 @@ output:
     toc_float: yes
 ---
 
+<br>
+
+> This report contain regression models created based on data describing  5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
+
+<br>
+
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(modelr)
@@ -55,6 +61,40 @@ data <- read_csv(here("data/speed-dating.csv"),
 data %>%
   glimpse()
 ```
+
+<br>
+
+## The variables
+
+<br>
+
+- **iid** : id of the participant p1 in the date
+- **gender** : gender of p1, 0 = woman
+- **order** : of the several dates in the night, this was the nth, according to this variable
+- **pid** : id of participant p2
+- **int_corr** : correlation between the interests of p1 and p2
+- **samerace** : Are p1 and p2 of the same race?
+- **age_o** : Age of p2
+- **age** : Age of p1
+- **field** : field of study of p1
+- **race** : race of p1. The code is Black/African American=1; European/Caucasian-American=2; Latino/Hispanic American=3; Asian/Pacific Islander/Asian-American=4; Native American=5; Other=6
+- **from** : from where p1 comes from
+- **career** : what career p1 wants to follow sports, tvsports, exercise, dining, museums, art, hiking, gaming, clubbing, reading, tv, theater, movies, concerts, music, shopping, yoga : From 1 to 10, how interested p1 is in each one of these activities$
+- **attr** : how attractive p1 thinks p2 is
+- **sinc** : how sincere  p1 thinks p2 is
+- **intel** : how smart p1 thinks p2 is
+- **fun** : how fun p1 thinks p2 is
+- **amb** : how ambitious p1 thinks p2 is
+- **shar** : how much p1 believes they both (p1 and p2) share the same interests and hobbies
+- **like** : in general, how much does p1 likes p2?
+- **prob** : how probable p1 thinks it's that p2 will want to meet again with p- (scale 1-10)
+- **attr3_s** : how attractive p1 believes itself
+- **sinc3_s** : how sincere p1 believes itself
+- **intel3_s** : how smart p1 believes itself
+- **fun3_s** : how fun p1 believes itself
+- **amb3_s** : how ambitious p1 believes itself
+
+<br>
 
 ```{r}
 data %>%
@@ -102,7 +142,7 @@ data %>%
 
 Regarding the relatinship with the response variable "**like**":
 
-* Looking at the bidimensional density plot**fun** and **attr** have a cleaner and clearer connection with **like** as expected from what we saw in terms of correlation.
+* Looking at the bidimensional density plots the variables **fun** and **attr** have a cleaner and clearer connection with **like** as expected from what we saw in terms of correlation.
 * Despite unpromising results in correlation **prob** has a somewhat clean interaction with **like** in terms of bidimensional density plot. Might be worth looking into.
 
 <br>
@@ -127,7 +167,7 @@ data %>%
 
 * Intuition would suggest a positive interaction between being seen as attractive and being liked (no surprise there), that interaction being of considerable magnitude.
 
-## Split Data for Cross Validation
+## Splitting Data for Cross Validation
 
 ```{r}
 data %>%  # Keep only candidate and response variables
@@ -144,6 +184,8 @@ data %>% ## Put numeric predictor variables on same scale
 data_scaled %>%
   glimpse()
 ```
+
+* Selecting candidate predictors, filtering invalid numbers and putting the variables on appropriate scale
 
 <br>
 
@@ -164,6 +206,9 @@ training %>%
   glimpse()
 ```
 
+* Randomly selecting the **training data**
+
+
 ```{r}
 dplyr::anti_join(data_scaled, 
                  training, 
@@ -172,8 +217,18 @@ testing %>%
   glimpse()
 ```
 
+* The rest of the data will be the **testing data** (Disjoint sets)
+
+<br>
+
+
+***
+
+<br>
 
 # Applying Regression Models
+
+<br>
 
 ## Intelligence related Model
 
@@ -291,6 +346,8 @@ mod %>%
 ```
 
 ### Cross Validation
+
+<br>
 
 #### Validation Set Approach
 
@@ -420,6 +477,8 @@ mod %>%
 ```
 
 ### Cross Validation
+
+<br>
 
 #### Validation Set Approach
 
