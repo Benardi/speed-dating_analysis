@@ -115,6 +115,8 @@ temp %>%
 
 # Testing Regression Models
 
+## Naive Model
+
 ```{r}
 temp %>% ## Put predictors on same scale
    mutate_at(.vars = vars(fun,attr,sinc,intel,shar),
@@ -189,13 +191,15 @@ x <- qnorm(c(0.25, 0.75))
 slope <- diff(y)/diff(x)
 int <- y[1L] - slope * x[1L]
 
-t %>%
+resid_data %>%
   ggplot(aes(sample=std.resid)) +
   stat_qq(shape=1, size=3) +      # open circles
   labs(title="Normal Q-Q",        # plot title
   x="Theoretical Quantiles",      # x-axis label
   y="Standardized Residuals") +   # y-axis label
   geom_abline(slope = slope,
+              color = "red",
+              size = 0.8,
               intercept = int,
               linetype="dashed")  # dashed reference line
 ```
@@ -233,30 +237,14 @@ mod %>%
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
 ```
 
-<!-- ```{r} -->
-<!-- # library(rgl) -->
-<!-- # with(temp,plot3d(like,shar,attr, col="blue", size=1, type="s", main="3D Quadratic Model Fit with Log of Income excl. Women^2")) -->
-
-
-<!-- ``` -->
-
-<!-- ## We gotta pump up those numbers -->
+<!-- ## Obviously Overfitted Model -->
 
 <!-- ```{r} -->
 <!-- t <- data %>% na.omit() -->
-<!-- mod <- lm(like ~ factor(from) * fun * prob * order +  -->
-<!--             factor(from) * attr * prob * order +  -->
-<!--             factor(from) * shar * prob * order +  -->
+<!-- mod <- lm(like ~ factor(from) * fun * prob * order + -->
+<!--             factor(from) * attr * prob * order + -->
+<!--             factor(from) * shar * prob * order + -->
 <!--             factor(from) * sinc * prob * order, data = t) -->
-<!-- glance(mod)  -->
-<!-- ```  -->
-<!-- ```{r} -->
-<!-- sqrt(mean(mod$residuals^2)) -->
+<!-- glance(mod) -->
 <!-- ``` -->
-
-<!-- ```{r} -->
-<!-- autoplot(mod) -->
-<!-- ``` -->
-
-
 
