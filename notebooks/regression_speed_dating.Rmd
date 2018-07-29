@@ -34,6 +34,7 @@ data <- read_csv(here("data/speed-dating.csv"),
                                  from = col_character(),
                                  career = col_character(),
                                  attr = col_double(),
+                                 samerace = col_character(),
                                  sinc = col_double(),
                                  intel = col_double(),
                                  fun = col_double(),
@@ -46,9 +47,7 @@ data <- read_csv(here("data/speed-dating.csv"),
                                  sinc3_s = col_double(),
                                  intel3_s = col_double(),
                                  fun3_s = col_double(),
-                                 amb3_s = col_double())) %>%
-  mutate( age_dif =abs(age - age_o))
-
+                                 amb3_s = col_double())) 
 data %>%
   glimpse()
 ```
@@ -63,15 +62,18 @@ data %>%
 * Most of the participants are white (code = 2)
 * There were no native americans involved (code = 5) 
 
+## Filtering promising candidates
+
 ```{r}
 require(GGally)
 
-temp <- data %>% 
-  select(like,fun,amb,attr,sinc,intel,shar,prob,
-         fun3_s,amb3_s,attr3_s,sinc3_s,intel3_s) %>% 
-    na.omit()
-
-ggcorr(temp, palette = "RdBu", label = TRUE,
+data %>% 
+  select(like,fun,amb,attr,
+         sinc,intel,shar,prob,
+         fun3_s,amb3_s,attr3_s,
+         sinc3_s,intel3_s) %>% 
+  na.omit() %>%
+  ggcorr(palette = "RdBu", label = TRUE,
        hjust = 0.75, label_size = 3, nbreaks = 5) +
   ggtitle("Correlation plot for employed variables")
 ```
@@ -81,12 +83,11 @@ ggcorr(temp, palette = "RdBu", label = TRUE,
 * Intelligence has interesting interactions with sincerity and ambition.
 
 ```{r}
-temp <- data %>% 
-  select(like,fun,attr,sinc,intel,shar,prob) %>% 
-    na.omit()
-
-ggpairs(temp, 
-        upper = list(continuous = "density"), 
+data %>% 
+  select(like,fun,attr,sinc,
+         intel,shar,prob) %>% 
+  na.omit() %>%
+  ggpairs(upper = list(continuous = "density"), 
         lower = list(continuous = wrap("cor", size=5)),
         axisLabels = 'show',progress = F) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -98,38 +99,79 @@ Regarding the relatinship with the response variable "**like**":
 * Despite unpromising results in correlation **prob** has a somewhat clean interaction with **like** in terms of bidimensional density plot. Might be worth looking into.
 
 ```{r}
-temp %>%
+data %>%
+  na.omit(fun, like) %>%
   ggplot(aes(fun, like)) +
-   stat_density2d(aes(fill = ..level..), geom = "polygon")
+  stat_density2d(aes(fill = ..level..),
+                 geom = "polygon")
 ```
 
 * Intuition would suggest a positive interaction between being seen as fun and being liked, that interaction being of considerable magnitude.
 
 ```{r}
-temp %>%
+data %>%
+  na.omit(attr, like) %>%
   ggplot(aes(attr, like)) +
-   stat_density2d(aes(fill = ..level..), geom = "polygon")
+  stat_density2d(aes(fill = ..level..),
+                 geom = "polygon")
 ```
 
 * Intuition would suggest a positive interaction between being seen as attractive and being liked (no surprise there), that interaction being of considerable magnitude.
+
+## Split Data for Cross Validation
+
+```{r}
+data %>%  # Keep only candidate and response variables
+  select(from, fun, prob, order,
+         attr, sinc, prob, shar, 
+         intel, like) %>%
+  mutate(from = factor(from)) %>%
+  na.omit() -> data  # remove NAs
+
+data %>% ## Put numeric predictor variables on same scale 
+   mutate_at(.vars = vars(fun, prob, order,attr,
+                          sinc, prob, shar,intel),
+             .funs = funs(scale(.))) -> data_scaled
+
+data_scaled %>%
+  glimpse()
+```
+
+<br>
+
+#### For the sake of simplicity we'll follow the (80/20) thumb rule (based on Pareto's principle) and put 80% of our dataset in the training set and 20% in the test set. 
+
+<br>
+
+```{r}
+set.seed(101)
+
+## Adding surrogate key to dataframe
+data_scaled$id <- 1:nrow(data_scaled)
+
+data_scaled %>% 
+  dplyr::sample_frac(.8) -> training
+
+training %>% 
+  glimpse()
+```
+
+```{r}
+dplyr::anti_join(data_scaled, 
+                 training, 
+                 by = 'id') -> testing
+testing %>% 
+  glimpse()
+```
+
 
 # Testing Regression Models
 
 ## Naive Model
 
 ```{r}
-temp %>% ## Put predictors on same scale
-   mutate_at(.vars = vars(fun,attr,sinc,intel,shar),
-             .funs = funs(scale(.))) -> temp
-
-temp %>% 
-  sample_n(10)
-```
-
-```{r}
-t <- data %>% na.omit()
 mod <- lm(like ~  fun + attr + shar + prob ,
-          data = t)
+          data = training)
 
 glance(mod) 
 ``` 
@@ -155,7 +197,7 @@ Let's keep the residue data in a specific dataframe
 ```{r}
 mod.res <- resid(mod)
 std.resid <- rstandard(mod)
-like <- t$like
+like <- training$like
 
 resid_data <- data.frame(mod.res,std.resid,like,
                        stringsAsFactors=FALSE)
@@ -244,7 +286,7 @@ mod %>%
 <!-- mod <- lm(like ~ factor(from) * fun * prob * order + -->
 <!--             factor(from) * attr * prob * order + -->
 <!--             factor(from) * shar * prob * order + -->
-<!--             factor(from) * sinc * prob * order, data = t) -->
+<!--             factor(from) * sinc * prob * order, data = training) -->
 <!-- glance(mod) -->
 <!-- ``` -->
 
