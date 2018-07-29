@@ -66,7 +66,7 @@ data %>%
 * Most of the participants are white (code = 2)
 * There were no native americans involved (code = 5) 
 
-## Filtering promising candidates
+## Choosing promising candidate variables
 
 ```{r}
 require(GGally)
@@ -87,6 +87,8 @@ data %>%
 * Among what p1 thinks about p2 how *ambitious* p1 thinks p2 is shows the weakest correlation with how much p1 likes p2.
 * Intelligence has interesting interactions with sincerity and ambition.
 
+<br>
+
 ```{r}
 data %>% 
   select(like,fun,attr,sinc,
@@ -102,6 +104,8 @@ Regarding the relatinship with the response variable "**like**":
 
 * Looking at the bidimensional density plot**fun** and **attr** have a cleaner and clearer connection with **like** as expected from what we saw in terms of correlation.
 * Despite unpromising results in correlation **prob** has a somewhat clean interaction with **like** in terms of bidimensional density plot. Might be worth looking into.
+
+<br>
 
 ```{r}
 data %>%
@@ -127,7 +131,7 @@ data %>%
 
 ```{r}
 data %>%  # Keep only candidate and response variables
-  select(from, fun, prob, order,
+  select(fun, prob, order,
          attr, sinc, prob, shar, 
          intel, like, gender, samerace) %>%
   na.omit() -> data  # remove NAs
@@ -169,12 +173,12 @@ testing %>%
 ```
 
 
-# Testing Regression Models
+# Applying Regression Models
 
-## Naive Model
+## Intelligence related Model
 
 ```{r}
-mod <- lm(like ~ fun + attr + shar + sinc + prob + sinc * intel, 
+mod <- lm(like ~ fun + attr + shar + sinc + prob + sinc * intel + intel, 
           data = training)
 
 glance(mod) 
@@ -197,7 +201,7 @@ tidy(mod,
   geom_hline(yintercept = 0, colour = "darkred")
 ```
 
-## Residual Analysis
+### Residual Analysis
 
 Let's keep the residue data in a specific dataframe
 
@@ -286,7 +290,7 @@ mod %>%
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
 ```
 
-## Cross Validation
+### Cross Validation
 
 #### Validation Set Approach
 
@@ -299,3 +303,134 @@ data.frame( R2 = caret::R2(predictions, testing$like),
             ERR = caret::RMSE(predictions, testing$like)/
               mean(testing$like))
 ```
+
+## Gender related Model
+
+```{r}
+mod <- lm(like ~ fun + attr + gender + shar * gender + sinc + prob, 
+          data = training)
+
+glance(mod) 
+``` 
+
+```{r}
+tidy(mod, 
+     conf.int = TRUE, 
+     conf.level = 0.95)
+```
+
+```{r}
+tidy(mod, 
+     conf.int = TRUE, 
+     conf.level = 0.95)  %>%
+  filter(term != "(Intercept)") %>%
+  ggplot(aes(term, estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_errorbar(size = 0.8, width= 0.4) +
+  geom_point(color = "red", size = 2) +
+  geom_hline(yintercept = 0, colour = "darkred")
+```
+
+### Residual Analysis
+
+Let's keep the residue data in a specific dataframe
+
+```{r}
+mod.res <- resid(mod)
+std.resid <- rstandard(mod)
+like <- training$like
+
+resid_data <- data.frame(mod.res,std.resid,like,
+                       stringsAsFactors=FALSE)
+resid_data %>% 
+  sample_n(10)
+```
+
+
+```{r}
+resid_data %>%
+  ggplot(aes(like, mod.res)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0,
+             color = "red") +
+  labs(x = "Response Variable (like)", y = "Residue") +
+  ggtitle("Residual Plot")
+```
+
+```{r}
+mod %>%
+  ggplot(aes(.fitted, .resid)) + 
+  geom_point() +
+  stat_smooth(method="loess") + 
+  geom_hline(yintercept=0, col="red", linetype="dashed") + 
+  xlab("Fitted values") + ylab("Residuals") + 
+  ggtitle("Residual vs Fitted Plot")
+```
+
+
+```{r}
+y <- quantile(resid_data$std.resid[!is.na(resid_data$std.resid)], c(0.25, 0.75))
+x <- qnorm(c(0.25, 0.75))
+slope <- diff(y)/diff(x)
+int <- y[1L] - slope * x[1L]
+
+resid_data %>%
+  ggplot(aes(sample=std.resid)) +
+  stat_qq(shape=1, size=3) +      # open circles
+  labs(title="Normal Q-Q",        # plot title
+  x="Theoretical Quantiles",      # x-axis label
+  y="Standardized Residuals") +   # y-axis label
+  geom_abline(slope = slope,
+              color = "red",
+              size = 0.8,
+              intercept = int,
+              linetype="dashed")  # dashed reference line
+```
+
+```{r}
+mod %>%
+  ggplot(aes(.fitted, 
+             sqrt(abs(.stdresid)))) + 
+  geom_point(na.rm=TRUE) + 
+  stat_smooth(method="loess",
+              na.rm = TRUE) +
+  labs(title = "Scale-Location",
+       x= "Fitted Value",
+       y = expression(sqrt("|Standardized residuals|")))
+```
+
+```{r}
+mod %>%
+  ggplot(aes(.hat, .stdresid)) + 
+  geom_point(aes(size=.cooksd), na.rm=TRUE) +
+  stat_smooth(method="loess", na.rm=TRUE) +
+  xlab("Leverage")+ylab("Standardized Residuals") + 
+  ggtitle("Residual vs Leverage Plot") + 
+  scale_size_continuous("Cook's Distance", range=c(1,5)) +    
+  theme(legend.position="bottom")
+```
+
+```{r}
+mod %>%
+  ggplot(aes(.hat, .cooksd)) + 
+  geom_point(na.rm=TRUE) + 
+  stat_smooth(method="loess", na.rm=TRUE) + 
+  xlab("Leverage hii")+ylab("Cook's Distance") + 
+  ggtitle("Cook's dist vs Leverage hii/(1-hii)") + 
+  geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
+```
+
+### Cross Validation
+
+#### Validation Set Approach
+
+```{r}
+predictions <- mod %>% predict(testing)
+
+data.frame( R2 = caret::R2(predictions, testing$like),
+            RMSE = caret::RMSE(predictions, testing$like),
+            MAE = caret::MAE(predictions, testing$like),
+            ERR = caret::RMSE(predictions, testing$like)/
+              mean(testing$like))
+```
+
+
