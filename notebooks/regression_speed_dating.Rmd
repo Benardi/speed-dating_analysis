@@ -105,7 +105,9 @@ data %>%
   na.omit(race) %>%
   ggplot(aes(race, ..prop..)) +
     geom_bar(color = "black",
-           fill = "grey")
+           fill = "grey") +
+  labs(x= "Participant Race",
+       y = "Relative Frequency")
 ```
 
 * Most of the participants are white (code = 2)
@@ -116,7 +118,9 @@ data %>%
   na.omit(intel) %>%
   ggplot(aes(intel, ..prop..)) +
   geom_bar(color = "black",
-           fill = "grey")
+           fill = "grey") +
+  labs(x= "Intelligence (intel)",
+       y = "Relative Frequency")
 ```
 
 * Most of the time P1 gave P2 a score around 7.5 for intelligence.
@@ -126,7 +130,9 @@ data %>%
   na.omit(attr) %>%
   ggplot(aes(attr, ..prop..)) +
   geom_bar(color = "black",
-           fill = "grey")
+           fill = "grey") +
+  labs(x= "Attraciveness (attr)",
+       y = "Relative Frequency")
 ```
 
 * Most of the time P1 gave P2 a score around 6 for attractiveness.
@@ -136,7 +142,9 @@ data %>%
   na.omit(amb) %>%
   ggplot(aes(amb, ..prop..)) +
   geom_bar(color = "black",
-           fill = "grey")
+           fill = "grey") +
+  labs(x= "Ambition (amb)",
+       y = "Relative Frequency")
 ```
 
 * Similar to intelligence
@@ -146,7 +154,9 @@ data %>%
   na.omit(sinc) %>%
   ggplot(aes(sinc, ..prop..)) +
   geom_bar(color = "black",
-           fill = "grey")
+           fill = "grey") + 
+  labs(x= "Sincerity (sinc)",
+       y = "Relative Frequency")
 ```
 
 * Similar to intelligence
@@ -289,17 +299,16 @@ testing %>%
 #### How does intelligence impact on how much P1 likes P2 (like) ?
 
   * Positive or negative impact ?
-  * Is it relevant ?
   * Is it significant ?
+  * Is it relevant ?
  
 <br>
  
 #### How does intelligence interact with other characteristics (predictors) ?
 
   * Positive or negative impact ?
-  * Is it relevant ?
   * Is it significant ?
-
+  * Is it relevant ?
 
 <br>
 
@@ -307,11 +316,11 @@ testing %>%
 
 <br>
 
-# Applying Regression Models
+# Applying Linear Regression Model
 
 <br>
 
-Our evaluation of the regressions can be divided as follow:
+Our evaluation of the regression can be divided as follow:
 
 * Train the model with the training data
      + Observe the R² and adjusted R² 
@@ -319,8 +328,10 @@ Our evaluation of the regressions can be divided as follow:
 * Analyze the training residue
 * Use the test data to cross validate our model.
 
+<br>
+
 ```
-Our response variable is the variable like (How much participant 1 liked participant 2).
+Our response variable is the variable "like" (How much participant 1 liked participant 2).
 ```
 
 <br>
@@ -360,7 +371,9 @@ tidy(mod,
   ggplot(aes(term, estimate, ymin = conf.low, ymax = conf.high)) +
   geom_errorbar(size = 0.8, width= 0.4) +
   geom_point(color = "red", size = 2) +
-  geom_hline(yintercept = 0, colour = "darkred")
+  geom_hline(yintercept = 0, colour = "darkred") +
+  labs(x = "Predictor variable",
+       y = "Estimated value (95% of confidence)")
 ```
 
 <br>
