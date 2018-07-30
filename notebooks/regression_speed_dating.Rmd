@@ -98,15 +98,59 @@ data %>%
 
 <br>
 
+## Data exploration
+
 ```{r}
 data %>%
   na.omit(race) %>%
   ggplot(aes(race, ..prop..)) +
-  geom_bar()
+    geom_bar(color = "black",
+           fill = "grey")
 ```
 
 * Most of the participants are white (code = 2)
 * There were no Native Americans involved (code = 5) 
+
+```{r}
+data %>%
+  na.omit(intel) %>%
+  ggplot(aes(intel, ..prop..)) +
+  geom_bar(color = "black",
+           fill = "grey")
+```
+
+* Most of the time P1 gave P2 a score around 7.5 for intelligence.
+
+```{r}
+data %>%
+  na.omit(attr) %>%
+  ggplot(aes(attr, ..prop..)) +
+  geom_bar(color = "black",
+           fill = "grey")
+```
+
+* Most of the time P1 gave P2 a score around 6 for attractiveness.
+
+```{r}
+data %>%
+  na.omit(amb) %>%
+  ggplot(aes(amb, ..prop..)) +
+  geom_bar(color = "black",
+           fill = "grey")
+```
+
+* Similar to intelligence
+
+```{r}
+data %>%
+  na.omit(sinc) %>%
+  ggplot(aes(sinc, ..prop..)) +
+  geom_bar(color = "black",
+           fill = "grey")
+```
+
+* Similar to intelligence
+
 
 ## Choosing promising candidate variables
 
@@ -168,6 +212,16 @@ data %>%
 ```
 
 * Intuition would suggest a positive interaction between being seen as attractive and being liked (no surprise there), that interaction being of considerable magnitude.
+
+```{r}
+data %>%
+  na.omit(intel, like) %>%
+  ggplot(aes(intel, like)) +
+  stat_density2d(aes(fill = ..level..),
+                 geom = "polygon")
+```
+
+* Intuition would suggest a positive interaction between being seen as intelligent and being liked (although not so clear).
 
 ## Splitting Data for Cross Validation
 
