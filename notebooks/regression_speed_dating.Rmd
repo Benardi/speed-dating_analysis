@@ -1,13 +1,13 @@
 ---
 title: "Regression on speed dating data"
 author: "José Benardi de Souza Nunes"
-date: 28/07/2018
+date: 29/07/2018
 output:
-  html_notebook:
-    toc: yes
-    toc_float: yes
   html_document:
     df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
     toc: yes
     toc_float: yes
 ---
@@ -34,6 +34,16 @@ theme_set(theme_bw())
 <br>
 
 ## The variables
+
+<br>
+
+```
+The response variable is the variable that you are interesting in making measurements and conclusions on.
+
+A predictor variable is a variable used in regression to predict another variable.
+
+Our response variable will be "like", we want to study how well the predictor variables can help predict its  behavior and how they impact it.
+```
 
 <br>
 
@@ -162,7 +172,7 @@ data %>%
 * Similar to intelligence
 
 
-## Choosing promising candidate variables
+## Choosing promising predictor variables
 
 ```{r}
 require(GGally)
@@ -233,10 +243,12 @@ data %>%
 
 * Intuition would suggest a positive interaction between being seen as intelligent and being liked (although not so clear).
 
+<br>
+
 ## Splitting Data for Cross Validation
 
 ```{r}
-data %>%  # Keep only candidate and response variables
+data %>%  # Keep only promising predictor variables and response variable
   select(fun, prob, order, amb,
          attr, sinc, prob, shar, 
          intel, like, gender, samerace) %>%
@@ -251,7 +263,7 @@ data_scaled %>%
   glimpse()
 ```
 
-* Selecting candidate predictors, filtering invalid numbers and putting the variables on appropriate scale
+* Selecting promising predictors, filtering invalid numbers and putting the variables on appropriate scale
 
 <br>
 
@@ -340,7 +352,8 @@ Our response variable is the variable "like" (How much participant 1 liked parti
 
 <br>
 
-In this model we will include the main predictor variables (according to what we've seen in terms of correlation and some tweaking with the predictors that is not here). We'll also try to observe the effect of intelligence in sincerity.  
+In this model we will include the main predictor variables (according to what we've seen in terms of correlation and some tweaking with the predictors that is not here). We'll also try to observe the effect of intelligence in sincerity. _**For the sake of simplicity we'll use the thumb rule of alpha = 0.05 (95% confidence intervals).**_
+
 
 * **sinc * intel** refers to the interaction between sincerity and intelligence.
 * **amb * intel** refers to the interaction between ambition and intelligence.
@@ -551,35 +564,51 @@ Let's now gather all the information our model provided and definitely provide a
 
 ## How does intelligence impact on how much P1 likes P2 (like) ?
 
+<br>
 
 * Positive or negative impact ?
   
-> Intelligence has a positive impact on (like), the smarter P1 thinks P2 is the higher (like) will be.
+```
+Intelligence has a positive impact on (like), the smarter P1 thinks P2 is the higher (like) will be.
+```
 
   * Is it significant ?
 
-> At 95% of confidence we have evidence that the effect of intelligence on (like) is significant (C.I.) exclusively below 0.  
+```
+At 95% of confidence we have evidence that the effect of intelligence on (like) is significant (C.I.) exclusively below 0.
+```
   
   * Is it relevant ?
 
-> Among the significant predictors Intelligence has one of the less relevant effects, it still has it's value but you should be more worried that P1 thinks you're funny (fun) or attractive (attr). 
+```
+Among the significant predictors Intelligence has one of the less relevant effects (small magnitude), it still has it's value but you should be more worried about whether P1 thinks you're funny (fun) or attractive (attr) as both have high magnitude.
 
-> To be honest there's a lot of uncertainty around Intelligence, as we have no evidence at 95% of confidence of difference in the magnitude of its effect and Sincerity's (sinc) or of its effect and Probability (prob): Intelligence C.I. encloses Sincerity's and Probability's. 
+To be honest there's a lot of uncertainty around Intelligence, as we have no evidence at 95% of confidence of difference in the magnitude of its effect and Sincerity's (sinc) or of its effect and Probability (prob): Intelligence C.I. encloses Sincerity's and Probability's. 
+```
 
 <br>
  
 ## How does intelligence interact with other characteristics (predictors) ?
 
+<br>
+
   * Positive or negative impact ?
 
-> Inteligence has an interaction with Sincerity and with Ambition, at 95% of confidence we can't be sure whether the effect for either is positive or negative as both C.I.s intersect 0. 
+```
+Inteligence has an interaction with Sincerity and with Ambition, at 95% of confidence we can't be sure whether the effect for either is positive or negative as both C.I.s intersect 0.
+```
 
   * Is it significant ?
 
-> At 95% of confidence we have evidence that it's not significant both  (Inteligence * Sincerity) and (Inteligence * Ambition).
+``` 
+At 95% of confidence we have evidence that it's not significant both (Inteligence * Sincerity) and (Inteligence * Ambition). 
+
+```
 
   * Is it relevant ?
   
-> It's not relevant for  both (Inteligence * Sincerity) and (Inteligence * Ambition).
+``` 
+It's not relevant for both (Inteligence * Sincerity) and (Inteligence * Ambition).
+```
 
 
