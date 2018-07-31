@@ -14,7 +14,7 @@ output:
 
 <br>
 
-> This report contains regression models created based on data describing  5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
+> This report contains regression models created based on data describing 5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
 
 <br>
 
@@ -42,7 +42,7 @@ The response variable is the variable that you are interesting in making measure
 
 A predictor variable is a variable used in regression to predict another variable.
 
-Our response variable will be "like", we want to study how well the predictor variables can help predict its  behavior and how they impact it.
+Our response variable will be "like", we want to study how well the predictor variables can help predict its behavior and how they impact it.
 ```
 
 <br>
@@ -60,7 +60,7 @@ Our response variable will be "like", we want to study how well the predictor va
 - **from** : from where p1 comes from
 - **career** : what career p1 wants to follow sports, tvsports, exercise, dining, museums, art, hiking, gaming, clubbing, reading, tv, theater, movies, concerts, music, shopping, yoga : From 1 to 10, how interested p1 is in each one of these activities$
 - **attr** : how attractive p1 thinks p2 is
-- **sinc** : how sincere  p1 thinks p2 is
+- **sinc** : how sincere p1 thinks p2 is
 - **intel** : how smart p1 thinks p2 is
 - **fun** : how fun p1 thinks p2 is
 - **amb** : how ambitious p1 thinks p2 is
@@ -408,7 +408,7 @@ tidy(mod,
 
 ### Relevant ?
 
-* In terms of relevance **attr** is the clear winner, i.e. it matters a lot more whether your participant 1 thinks you're attractive.
+* In terms of relevance **attr** is the clear winner, i.e. it matters a lot more whether your participant 1 thinks you're attractive, e.g. if your attractiveness goes up 1 point your *like* score will go up between [0.58,	0.67] approximately.
     + **Intel** and **sinc** count among the less significant predictors of positive effect, we actually can't tell if there's a difference in the magnitude of their effect as **sinc** C.I is enclosed by **Intel** C.I.
     + **sinc * intel, amb and intel * amb** appears to not be relevant.
 
@@ -575,15 +575,15 @@ Intelligence has a positive impact on (like), the smarter P1 thinks P2 is the hi
   * Is it significant ?
 
 ```
-At 95% of confidence we have evidence that the effect of intelligence on (like) is significant (C.I.) exclusively below 0.
+At 95% of confidence we have evidence that the effect of intelligence on (like) is significant (C.I. exclusively above 0).
 ```
   
   * Is it relevant ?
 
 ```
-Among the significant predictors Intelligence has one of the less relevant effects (small magnitude), it still has it's value but you should be more worried about whether P1 thinks you're funny (fun) or attractive (attr) as both have high magnitude.
+Among the significant predictors Intelligence has one of the less relevant effects (small magnitude), if your intelligence score goes up 1 point your like score will go up around [0.10,0.36], not that much to be honest. Intelligence still has it's value but you should be more worried about whether P1 thinks you're funny (fun) or attractive (attr) as both have higher magnitude.
 
-To be honest there's a lot of uncertainty around Intelligence, as we have no evidence at 95% of confidence of difference in the magnitude of its effect and Sincerity's (sinc) or of its effect and Probability (prob): Intelligence C.I. encloses Sincerity's and Probability's. 
+To be honest there's a lot of uncertainty around Intelligence as [0.10,0.36] is a long interval. The uncertainty becomes even more apparent for we have no evidence at 95% of confidence of a significant difference between the magnitude of Intelligence's effect and Sincerity's effect (sinc) or. We also have no evidence at 95% of confidence of a significant difference between the magnitude of Intelligence's effect and Probability's effect (prob): Intelligence C.I. encloses Sincerity's and Probability's. 
 ```
 
 <br>

@@ -243,7 +243,7 @@ div.tocify {
 
 A predictor variable is a variable used in regression to predict another variable.
 
-Our response variable will be &quot;like&quot;, we want to study how well the predictor variables can help predict its  behavior and how they impact it.</code></pre>
+Our response variable will be &quot;like&quot;, we want to study how well the predictor variables can help predict its behavior and how they impact it.</code></pre>
 <p><br></p>
 <ul>
 <li><strong>iid</strong> : id of the participant p1 in the date</li>
@@ -664,7 +664,7 @@ glance(mod) </code></pre>
 <div id="relevant" class="section level3">
 <h3>Relevant ?</h3>
 <ul>
-<li>In terms of relevance <strong>attr</strong> is the clear winner, i.e. it matters a lot more whether your participant 1 thinks you’re attractive.
+<li>In terms of relevance <strong>attr</strong> is the clear winner, i.e. it matters a lot more whether your participant 1 thinks you’re attractive, e.g. if your attractiveness goes up 1 point your <em>like</em> score will go up between [0.58, 0.67] approximately.
 <ul>
 <li><strong>Intel</strong> and <strong>sinc</strong> count among the less significant predictors of positive effect, we actually can’t tell if there’s a difference in the magnitude of their effect as <strong>sinc</strong> C.I is enclosed by <strong>Intel</strong> C.I.</li>
 <li><strong>sinc * intel, amb and intel * amb</strong> appears to not be relevant.</li>
@@ -834,13 +834,13 @@ data.frame( R2 = caret::R2(predictions, testing$like),
 <ul>
 <li>Is it significant ?</li>
 </ul>
-<pre><code>At 95% of confidence we have evidence that the effect of intelligence on (like) is significant (C.I.) exclusively below 0.</code></pre>
+<pre><code>At 95% of confidence we have evidence that the effect of intelligence on (like) is significant (C.I. exclusively above 0).</code></pre>
 <ul>
 <li>Is it relevant ?</li>
 </ul>
-<pre><code>Among the significant predictors Intelligence has one of the less relevant effects (small magnitude), it still has it's value but you should be more worried about whether P1 thinks you're funny (fun) or attractive (attr) as both have high magnitude.
+<pre><code>Among the significant predictors Intelligence has one of the less relevant effects (small magnitude), if your intelligence score goes up 1 point your like score will go up around [0.10,0.36], not that much to be honest. Intelligence still has it's value but you should be more worried about whether P1 thinks you're funny (fun) or attractive (attr) as both have higher magnitude.
 
-To be honest there's a lot of uncertainty around Intelligence, as we have no evidence at 95% of confidence of difference in the magnitude of its effect and Sincerity's (sinc) or of its effect and Probability (prob): Intelligence C.I. encloses Sincerity's and Probability's. </code></pre>
+To be honest there's a lot of uncertainty around Intelligence as [0.10,0.36] is a long interval. The uncertainty becomes even more apparent for we have no evidence at 95% of confidence of a significant difference between the magnitude of Intelligence's effect and Sincerity's effect (sinc) or. We also have no evidence at 95% of confidence of a significant difference between the magnitude of Intelligence's effect and Probability's effect (prob): Intelligence C.I. encloses Sincerity's and Probability's. </code></pre>
 <p><br></p>
 </div>
 <div id="how-does-intelligence-interact-with-other-characteristics-predictors-1" class="section level2">
