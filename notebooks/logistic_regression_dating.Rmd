@@ -1,0 +1,112 @@
+---
+title: "Logistic Regression on speed dating data"
+author: "José Benardi de Souza Nunes"
+date: 29/07/2018
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+---
+
+<br>
+
+> This report contains regression models created based on data describing 5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
+
+<br>
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+
+theme_set(theme_bw())
+```
+
+# Data Overview
+
+<br>
+
+## The variables
+<br>
+
+```
+The response variable is the variable that you are interested in learn something about.
+
+A predictor variable is a variable used in regression to predict another variable.
+
+Our response variable will be "dec", we want to study how well the predictor variables can help predict its behavior and how they impact it.
+```
+
+<br>
+
+##### Each speed date had two participants, **p1** (participant 1) and **p2** (participant 2). For each speed date we the following variable were collected:
+
+<br>
+
+- **iid** : id of the participant p1 in the date
+- **gender** : gender of p1, 0 = woman
+- **order** : of the several dates in the night, this was the nth, according to this variable
+- **pid** : id of participant p2
+- **int_corr** : correlation between the interests of p1 and p2
+- **samerace** : Are p1 and p2 of the same race?
+- **age_o** : Age of p2
+- **age** : Age of p1
+- **field** : field of study of p1
+- **race** : race of p1. The code is Black/African American=1; European/Caucasian-American=2; Latino/Hispanic American=3; Asian/Pacific Islander/Asian-American=4; Native American=5; Other=6
+- **from** : from where p1 comes from
+- **career** : what career p1 wants to follow sports, tvsports, exercise, dining, museums, art, hiking, gaming, clubbing, reading, tv, theater, movies, concerts, music, shopping, yoga : From 1 to 10, how interested p1 is in each one of these activities$
+- **attr** : how attractive p1 thinks p2 is
+- **sinc** : how sincere p1 thinks p2 is
+- **intel** : how smart p1 thinks p2 is
+- **fun** : how fun p1 thinks p2 is
+- **amb** : how ambitious p1 thinks p2 is
+- **shar** : how much p1 believes they both (p1 and p2) share the same interests and hobbies
+- **like** : in general, how much does p1 likes p2?
+- **prob** : how probable p1 thinks it's that p2 will want to meet again with p- (scale 1-10)
+- **attr3_s** : how attractive p1 believes itself
+- **sinc3_s** : how sincere p1 believes itself
+- **intel3_s** : how smart p1 believes itself
+- **fun3_s** : how fun p1 believes itself
+- **amb3_s** : how ambitious p1 believes itself
+- **dec** : whether p1 wants to meet p2 again given how the speed date went.
+
+<br>
+
+```{r}
+data <- read_csv(here::here("data/speed-dating2.csv"),
+                 col_types = cols(
+                          .default = col_integer(),
+                          int_corr = col_double(),
+                          field = col_character(),
+                          from = col_character(),
+                          career = col_character(),
+                          attr = col_double(),
+                          sinc = col_double(),
+                          intel = col_double(),
+                          fun = col_double(),
+                          amb = col_double(),
+                          shar = col_double(),
+                          like = col_double(),
+                          prob = col_double(),
+                          match_es = col_double(),
+                          attr3_s = col_double(),
+                          sinc3_s = col_double(),
+                          intel3_s = col_double(),
+                          fun3_s = col_double(),
+                          amb3_s = col_double(),
+                          dec = col_character()
+                        )) %>% 
+  mutate(dec = factor(dec),
+         gender = factor(gender),
+         samerace = factor(samerace),
+         race = factor(race))
+
+data %>%
+  glimpse()
+```
+
+
+
