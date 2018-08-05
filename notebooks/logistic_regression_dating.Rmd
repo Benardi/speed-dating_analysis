@@ -1,7 +1,7 @@
 ---
 title: "Logistic Regression on speed dating data"
 author: "José Benardi de Souza Nunes"
-date: 29/07/2018
+date: 05/08/2018
 output:
   html_notebook:
     toc: yes
@@ -242,7 +242,21 @@ glance(bm)
 pR2(bm)
 ```
 
-## Results
+***
+
+<br>
+
+# Conclusion
+
+<br>
+
+##### Our two questions are:
+
+<br>
+
+> Which factors (predictors) have a significant effect on the chance of p1 deciding to meet with p2 again? Are their effect positive or negative?
+
+> Which factor (predictor) has the most effect (relevance) on the chance of p1 deciding to meet with p2 again?
 
 ```{r}
 broom::tidy(bm,
@@ -262,20 +276,31 @@ broom::tidy(bm,
   ylim(0,3)
 ```
 
-> Which factors (predictors) have a significant effect on the chance of p1 deciding to meet with p2 again? Are their effect positive or negative?
+## Significance
+
+<br>
 
 As mentioned in the previous section when $e^{b1} > 1$ its effect is positive and when $e^{b1} < 1$ it has a negative effect. Therefore:
 
-* **fun, intel, shar** and **shar*intel** have no significant effect as (their C.I) intersect 1.
+* **fun, intel, shar** and **shar * intel** have no significant effect as (their C.I) intersect 1.
 
 * **amb,  attr, like, prob** and **sinc** have significant effect as (their C.I) don't intersect 1.
     + **amb** and **sinc** have a negative effect on the **oodratio** of $dec = 1$ over $dec = 0$.
     + **attr, like** and **prob** have a positive effect on the **oodratio** of $dec = 1$ over $dec = 0$.
 
-> Which factor (predictor) has the most effect (relevance) on the chance of p1 deciding to meet with p2 again?
+<br>
+
+## Most relevant predictor
+
+<br>
 
 A multiplier of negative effect is strongest _the farther it's from 1 and the closer it's to 0_ while A multiplier of positive effect is strongest _the farther it's from 1 and the closer it's to $+\infty$_.
 
-* The predictor **like** is the most relevant of the candidates i.e. it's the one has that the most effect on the chance of p1 deciding to meet with p2 again.  The predictor **like**'s estimate range is the farthest from 1. To have an idea the effect of **like** is around duplicating the **oddratio**. 
-    + To have a multiplier of negative effect comparable to **like** its C.I. would need to be around 0.5, so it would cut by half the **oddratio** the same way **like** doubles it. As we can see in the plot the range of all other predictors (**fun, attr, shar, sinc, prob, amb, intel, intel \cdot shar**) in terms of C.I. are far too close to 1 to compare to **like**.
+<br>
+
+##### The predictor **like** is the most relevant of the candidates i.e. it's the one has that the most effect on the chance of p1 deciding to meet with p2 again. 
+
+* The predictor **like**'s estimate range is the farthest from 1. To have an idea C.I for **like** is around 2 so it's basically  doubling the **oddratio** when $like = 1$. 
+* To have a multiplier of negative effect comparable to **like** its C.I. would need to be around 0.5, so it would cut by half the **oddratio** when its value iis 1 the same way **like** doubles it when $like = 1$. 
+* As we can see in the plot the range of all other predictors (**fun, attr, shar, sinc, prob, amb, intel, intel \cdot shar**) in terms of C.I. are far too close to 1 to compare to **like**.
 
