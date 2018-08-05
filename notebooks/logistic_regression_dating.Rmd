@@ -110,7 +110,11 @@ data %>%
   glimpse()
 ```
 
-# Minor explanation on logistic regression
+# Explanation on logistic regression
+
+<br>
+
+If you already know your way around logistic regression feel free to skip this section. If you ever feel unsure about it feel free to come back here and consult it.
 
 <br>
 
@@ -130,7 +134,7 @@ As you may have noticed $dec$ is a binary variable (p1 either says **yes** or **
 
 <br>
 
-$$\large P(y\ | \ x)=\frac{e^{b_{0}+b_{1}x}}{1 + e^{b_{0}+b_{1}x}}, \; \normalsize where: \ y = dec;\ x=like;$$
+$$\large P(y\ | \ x)=\frac{e^{b_{0}+b_{1} \cdot x}}{1 + e^{b_{0}+b_{1} \cdot x}}, \; \normalsize where: \ y = dec;\ x=like;$$
 
 <br>
 
@@ -138,7 +142,7 @@ However, to talk about how the predictor $like$ impacts the response variable $d
 
 <br>
 
-$$\large \frac{P(y\ | \ x)}{1 - P(y \ | \ x)} =e^{b_{0}+b_{1}x_{1}}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
+$$\large \frac{P(y\ | \ x)}{1 - P(y \ | \ x)} =e^{b_{0}+b_{1} \cdot x_{1}}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
 
 <br>
 
@@ -146,26 +150,67 @@ The libraries usually render the coefficients in the following form:
 
 <br>
 
-$$\large log(\frac{P(y\ | \ x)}{1 - P(y\ | \ x)}) =b_{0}+b_{1}x_{1}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
+$$\large log(\frac{P(y\ | \ x)}{1 - P(y\ | \ x)}) =b_{0}+b_{1} \cdot x_{1}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
 
 
 <br>
 
 ## Numeric example
 
+<br>
+
 In my experience an example with actual numbers helps a lot, so let's assume these are the following values for our variables (by means of the logistic regression):
 
-<br>
-
- $\large b1 = 0.9441278, \\ \large y = 1 \ (p1 \ wants \ to \ see \ p2 \ again ).$
+ $b1 = 0.9441278, \\ b0 = -6.2119061, \\ y = 1 \ (p1 \ wants \ to \ see \ p2 \ again ).$
 
 <br>
 
-The latter would render the following formula in terms of standard librarie output:
+Our variable's values would render the following formula in terms of standard librarie output:
 
 <br>
 
-$$\large log(\frac{P(y = 1\ | \ x)}{1 - P(y = 1\ | \ x)}) =b_{0}+b_{1}x_{1}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
+$$\large log(\frac{P(y = 1\ | \ x)}{1 - P(y = 1\ | \ x)}) =-6.2119061+0.9441278 \cdot x_{1}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
+
+<br>
+
+Knowing that $e^{-6.2119061} \sim  0.002005411$ the more meaningful formula with the actual exponentiations would look like:
+<br>
+
+$$\large \frac{P(y=1 \ | \ x)}{1 - P(y=1 \ | \ x)} =0.002005411 \cdot e^{b_{1} \cdot x}, \; \normalsize where: \ y = dec;\ x=like;$$
+
+<br>
+
+Which depending on $x$  will look like:
+
+<br>
+
+$\large \frac{P(y=1 \ | \ x)}{1 - P(y=1 \ | \ x)} =0.002005411, \; \normalsize if: \ x=0;$
+
+$\large \frac{P(y=1 \ | \ x)}{1 - P(y=1 \ | \ x)} =0.002005411 \cdot e^{b_{1}}, \; \normalsize where: \ x=1;$
+
+$\large \frac{P(y=1 \ | \ x)}{1 - P(y=1 \ | \ x)} =0.002005411 \cdot e^{2 \cdot b_{1}}, \; \normalsize where: \ x=2;$
+
+<br>
+
+And so forth...
+
+<br>
+
+Notice that at the end how the formula changes depends mostly on the term $\large e^{b_{1} \cdot x}$. If we have the exponentiation $A^{B}$ we have three possibilites:
+
+$B > 0 \ $ : Then $A^{B} > 1$ and $A^{B}$  will be bigger the bigger $B$ is.
+
+$B = 0 \ $ : Then $A^{B} = 1$ 
+
+$B < 0 \ $: Then $A^{B}$ boils down to $\frac{1}{A^{B}}$  which will be a smaller fraction the bigger $B$ is.
+
+<br>
+
+Mind now that our $b1 > 0$ or in other words $e^{b1} > 1$, therefore it will have a positive effect on $\frac{P(y=1 \ | \ x)}{1 - P(y=1 \ | \ x)}$, and the bigger it's the stronger the positive effect. Therefore $like$ has a positive effect on the _**oddratio**_ of $dec = 1$ over $dec = 0$.    
+
+<br>
+
+***
 
 <br>
 
