@@ -112,15 +112,17 @@ data %>%
 
 # Minor explanation on logistic regression
 
+<br>
+
 ## Formulas and definitions
 
 <br>
 
-Let's use as example our aforementioned response variable $dec$, and let's suppose we'll use as our sole predictor $like$. In the end it all boils down to a  conditional probability for a certain value of $dec$ and $like$, let's use $dec = 1$ (p1 wants to see p2 again) for the sake of the example:
+Let's use as example our aforementioned response variable $dec$, and let's suppose we'll use as our sole predictor $like$. In the end it all boils down to a  conditional probability for a certain value of $dec$ and $like$:
 
 <br>
 
-$$\large P(y = 1\ | \ x ) = z, \normalsize where: \ y = dec;\ x=like;$$
+$$\large P(y \ | \ x ) = z, \normalsize where: \ y = dec;\ x=like;$$
 
 <br>
 
@@ -149,6 +151,23 @@ $$\large log(\frac{P(y\ | \ x)}{1 - P(y\ | \ x)}) =b_{0}+b_{1}x_{1}, \; \normals
 
 <br>
 
+## Numeric example
+
+In my experience an example with actual numbers helps a lot, so let's assume these are the following values for our variables (by means of the logistic regression):
+
+<br>
+
+ $\large b1 = 0.9441278, \\ \large y = 1 \ (p1 \ wants \ to \ see \ p2 \ again ).$
+
+<br>
+
+The latter would render the following formula in terms of standard librarie output:
+
+<br>
+
+$$\large log(\frac{P(y = 1\ | \ x)}{1 - P(y = 1\ | \ x)}) =b_{0}+b_{1}x_{1}, \; \normalsize where: \ y = dec;\ x_{1}=like;$$
+
+<br>
 
 # Model with candidate predictors
 
