@@ -3,11 +3,11 @@ title: "Logistic Regression on speed dating data"
 author: "José Benardi de Souza Nunes"
 date: 05/08/2018
 output:
-  html_notebook:
-    toc: yes
-    toc_float: yes
   html_document:
     df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
     toc: yes
     toc_float: yes
 ---
@@ -20,6 +20,7 @@ output:
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
+library(ggfortify)
 library(broom)
 library(pscl)
 library(ROCR)
