@@ -22,6 +22,7 @@ output:
 library(tidyverse)
 library(broom)
 library(pscl)
+library(ROCR)
 library(here)
 
 theme_set(theme_bw())
@@ -406,6 +407,30 @@ bm %>%
 Overall our residua analysis suggests that our regression fit the data very well. 
 There may be a better model out there but ours does a pretty good job. 
 ```
+
+<br>
+
+# Cross Validation
+
+```{r}
+# Compute AUC for predicting Class with the model
+prob <- predict(bm, newdata=testing_data, type="response")
+pred <- prediction(prob, testing_data$dec)
+perf <- performance(pred, measure = "tpr", x.measure = "fpr")
+
+autoplot(perf) +
+  labs(x="False Positive Rate", 
+       y="True Positive Rate",
+       title="True Positive Rate vs False Positive Rate")
+```
+
+```{r}
+auc <- performance(pred, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+```
+* AUC values above 0.80 indicate that the model does a good job.
+* With a result of $0.863979$ the computed AUC for the predicting Class shows that the model does a good job in discriminating between the two categories which comprise our target variable.
 
 <br>
 
