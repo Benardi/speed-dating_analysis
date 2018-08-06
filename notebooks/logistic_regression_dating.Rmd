@@ -242,7 +242,114 @@ glance(bm)
 pR2(bm)
 ```
 
+* $Rho-squared$ also known as $McFadden's \ pseudo \ R2$ can be interpreted like R2, but its values tend to be considerably lower than those of the R2 index. And values from 0.2-0.4 indicate (in McFadden's words) excellent model fit. Our $0.3230123$ therefore represents an excellent fit in terms of $McFadden's \ pseudo \ R2$.
+
+<br>
+
 ***
+
+<br>
+
+## Residue Analysis
+
+<br>
+
+> Residue Analysis can be very hard to use to help you understand what is going on with your logistic regression model. So we should take what they say with a grain of salt and probably give more weight to what $McFadden's \ pseudo \ R2$ said.
+
+<br>
+
+Let's keep the residue data in a specific data frame
+
+```{r}
+mod.res <- resid(bm)
+std.resid <- rstandard(bm)
+dec <- data$dec
+
+resid_data <- data.frame(mod.res,std.resid,dec,
+                       stringsAsFactors=FALSE)
+resid_data %>% 
+  sample_n(10)
+```
+
+```{r}
+bm %>%
+  ggplot(aes(.fitted, .resid)) + 
+  geom_point() +
+  stat_smooth(method="loess") + 
+  geom_hline(yintercept=0, col="red", linetype="dashed") + 
+  xlab("Fitted values") + ylab("Residuals") + 
+  ggtitle("Residual vs Fitted Plot")
+```
+
+* There's no distinctive pattern in the plot, therefore this suggests that there weren't non-linear patterns in the data that couldn't be explained by the model and were left out in the residuals.
+
+> The data doesn't seem to demand a non-linear regression.
+
+
+```{r}
+y <- quantile(resid_data$std.resid[!is.na(resid_data$std.resid)], c(0.25, 0.75))
+x <- qnorm(c(0.25, 0.75))
+slope <- diff(y)/diff(x)
+int <- y[1L] - slope * x[1L]
+
+resid_data %>%
+  ggplot(aes(sample=std.resid)) +
+  stat_qq(shape=1, size=3) +      # open circles
+  labs(title="Normal Q-Q",        # plot title
+  x="Theoretical Quantiles",      # x-axis label
+  y="Standardized Residuals") +   # y-axis label
+  geom_abline(slope = slope,
+              color = "red",
+              size = 0.8,
+              intercept = int,
+              linetype="dashed")  # dashed reference line
+```
+
+* There's some deviation from the normal distribution on both left and right side of the qq plot, but otherwise the standardized residuals are not that far way from the normal distribution. _For a **logistic regression** our qqplot is very well behaved_.
+* The Normal Q-Q plot helps you detect if your residuals are normally distributed. But the deviance residuals don't have to be normally distributed for the model to be valid, so the normality / non-normality of the residuals doesn't necessarily tell you anything.
+
+> This suggests that there would be a better combination of predictors to be found, although the current one still seems considerably appropriate.
+
+
+
+```{r}
+bm %>%
+  ggplot(aes(.fitted, 
+             sqrt(abs(.stdresid)))) + 
+  geom_point(na.rm=TRUE) + 
+  stat_smooth(method="loess",
+              na.rm = TRUE) +
+  labs(title = "Scale-Location",
+       x= "Fitted Value",
+       y = expression(sqrt("|Standardized residuals|")))
+```
+
+* The residuals appear to be somewhat randomly spread, however there's a tendency in them to form a parabola. 
+* There's some degree of violation on the assumption of equal variance (homoscedasticity).
+
+> Confirmation of the qqplot results.
+
+```{r}
+bm %>%
+  ggplot(aes(.hat, .stdresid)) + 
+  geom_point(aes(size=.cooksd), na.rm=TRUE) +
+  stat_smooth(method="loess", na.rm=TRUE) +
+  xlab("Leverage")+ylab("Standardized Residuals") + 
+  ggtitle("Residual vs Leverage Plot") + 
+  scale_size_continuous("Cook's Distance", range=c(1,5)) +    
+  theme(legend.position="bottom")
+```
+
+* All the occurrences have low values of Cook's Distance (below 0.1).
+
+> There are no "outliers"/extreme values who are influential cases (i.e., subjects) and would therefore have an undue influence on the regression line.
+
+<br>
+
+```
+Overall our residua analysis suggests that our regression fit the data very well. 
+There may be a better model out there but ours does a pretty good job. 
+```
 
 <br>
 
