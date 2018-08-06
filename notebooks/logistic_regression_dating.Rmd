@@ -110,6 +110,65 @@ data %>%
   glimpse()
 ```
 
+## Splitting Data for Cross Validation
+
+```{r}
+data %>% # Keep only candidate predictor variables and response variable
+  select(dec,fun, prob, order, amb,
+         attr, sinc, prob, shar, 
+         intel, like, gender, samerace) %>%
+  na.omit() %>% # remove NAs
+   mutate_at(
+     .vars = vars(fun, prob, order,attr, ## Put numeric predictor variables on same scale 
+                  sinc, like, prob, shar,intel),
+     .funs = funs(as.numeric(scale(.)))) -> data_scaled
+
+data_scaled %>%
+  glimpse()
+```
+
+* Selecting promising predictors, filtering invalid numbers and putting the variables on appropriate scale
+
+<br>
+
+#### For the sake of simplicity we'll follow the (80/20) thumb rule (based on Pareto's principle) and put 80% of our dataset in the training set and 20% in the test set. 
+
+<br>
+
+```{r}
+set.seed(101) # We set the set for reason of reproducibility
+
+## Adding surrogate key to dataframe
+data_scaled$id <- 1:nrow(data_scaled)
+
+data_scaled %>% 
+  dplyr::sample_frac(.8) -> training_data
+
+training_data %>% 
+  glimpse()
+```
+
+* Randomly selecting the **training data**
+
+
+```{r}
+dplyr::anti_join(data_scaled, 
+                 training_data, 
+                 by = 'id') -> testing_data
+testing_data %>% 
+  glimpse()
+```
+
+* The rest of the data will be the **testing data** (Disjoint sets)
+
+<br>
+
+
+***
+
+<br>
+
+
 # Explanation on logistic regression
 
 <br>
@@ -165,7 +224,7 @@ In my experience an example with actual numbers helps a lot, so let's assume the
 
 <br>
 
-Our variable's values would render the following formula in terms of standard librarie output:
+Our variable's values would render the following formula in terms of standard library output:
 
 <br>
 
@@ -173,7 +232,7 @@ $$\large log(\frac{P(y = 1\ | \ x)}{1 - P(y = 1\ | \ x)}) =-6.2119061+0.9441278 
 
 <br>
 
-Knowing that $e^{-6.2119061} \sim  0.002005411$ the more meaningful formula with the actual exponentiations would look like:
+Knowing that $e^{-6.2119061} \sim  0.002005411$ the more meaningful formula with the actual exponentiation would look like:
 <br>
 
 $$\large \frac{P(y=1 \ | \ x)}{1 - P(y=1 \ | \ x)} =0.002005411 \cdot e^{b_{1} \cdot x}, \; \normalsize where: \ y = dec;\ x=like;$$
@@ -196,7 +255,7 @@ And so forth...
 
 <br>
 
-Notice that at the end how the formula changes depends mostly on the term $\large e^{b_{1} \cdot x}$. If we have the exponentiation $A^{B}$ we have three possibilites:
+Notice that at the end how the formula changes depends mostly on the term $\large e^{b_{1} \cdot x}$. If we have the exponentiation $A^{B}$ we have three possibilities:
 
 $B > 0 \ $ : Then $A^{B} > 1$ and $A^{B}$  will be bigger the bigger $B$ is.
 
@@ -217,11 +276,8 @@ Mind now that our $b1 > 0$ or in other words $e^{b1} > 1$, therefore it will hav
 # Model with candidate predictors
 
 ```{r}
-data %>%
-  na.omit(dec, like, fun, attr, shar, sinc, prob, amb, intel) -> data
-  
 glm(dec ~ like + fun + attr + shar + sinc + prob + amb + intel + intel * shar,
-      data = data, 
+      data = training_data, 
       family = "binomial") -> bm
 
 tidy(bm, conf.int = TRUE) %>% 
@@ -242,7 +298,7 @@ glance(bm)
 pR2(bm)
 ```
 
-* $Rho-squared$ also known as $McFadden's \ pseudo \ R2$ can be interpreted like R2, but its values tend to be considerably lower than those of the R2 index. And values from 0.2-0.4 indicate (in McFadden's words) excellent model fit. Our $0.3230123$ therefore represents an excellent fit in terms of $McFadden's \ pseudo \ R2$.
+* $Rho-squared$ also known as $McFadden's \ pseudo \ R2$ can be interpreted like R2, but its values tend to be considerably lower than those of the R2 index. And values from 0.2-0.4 indicate (in McFadden's words) excellent model fit. Our $0.3221384$ therefore represents an excellent fit in terms of $McFadden's \ pseudo \ R2$.
 
 <br>
 
@@ -263,7 +319,7 @@ Let's keep the residue data in a specific data frame
 ```{r}
 mod.res <- resid(bm)
 std.resid <- rstandard(bm)
-dec <- data$dec
+dec <- training_data$dec
 
 resid_data <- data.frame(mod.res,std.resid,dec,
                        stringsAsFactors=FALSE)
@@ -380,7 +436,7 @@ broom::tidy(bm,
   labs(x = "Predictor variable",
        title = "Exponentiated logistic regression terms",
        y = expression(paste("estimated ", 'e'^{'B'}," (95% confidence)"))) +
-  ylim(0,3)
+  ylim(0,4)
 ```
 
 ## Significance
@@ -389,11 +445,11 @@ broom::tidy(bm,
 
 As mentioned in the previous section when $e^{b1} > 1$ its effect is positive and when $e^{b1} < 1$ it has a negative effect. Therefore:
 
-* **fun, intel, shar** and **shar * intel** have no significant effect as (their C.I) intersect 1.
+* **intel** and **shar * intel** have no significant effect as (their C.I) intersect 1.
 
-* **amb,  attr, like, prob** and **sinc** have significant effect as (their C.I) don't intersect 1.
+* **amb, attr, fun, like, prob, shar** and **sinc** have significant effect as (their C.I) don't intersect 1.
     + **amb** and **sinc** have a negative effect on the **oodratio** of $dec = 1$ over $dec = 0$.
-    + **attr, like** and **prob** have a positive effect on the **oodratio** of $dec = 1$ over $dec = 0$.
+    + **attr, fun, like ,prob** and **shar** have a positive effect on the **oodratio** of $dec = 1$ over $dec = 0$.
 
 <br>
 
@@ -407,7 +463,8 @@ A multiplier of negative effect is strongest _the farther it's from 1 and the cl
 
 ##### The predictor **like** is the most relevant of the candidates i.e. it's the one has that the most effect on the chance of p1 deciding to meet with p2 again. 
 
-* The predictor **like**'s estimate range is the farthest from 1. To have an idea C.I for **like** is around 2 so it's basically  doubling the **oddratio** when $like = 1$. 
-* To have a multiplier of negative effect comparable to **like** its C.I. would need to be around 0.5, so it would cut by half the **oddratio** when its value iis 1 the same way **like** doubles it when $like = 1$. 
-* As we can see in the plot the range of all other predictors (**fun, attr, shar, sinc, prob, amb, intel, intel \cdot shar**) in terms of C.I. are far too close to 1 to compare to **like**.
+* The predictor **like**'s estimate range is the farthest from 1. To have an idea C.I for **like** is around 3 so it's basically tripling the **oddratio** when $like = 1$. 
+* To have a multiplier of negative effect comparable to **like** its C.I. would need to be around $\frac{1}{3}$, so it would cut by three the **oddratio** when its value is 1 the same way **like** triples it when $like = 1$. 
+* As we can see in the plot the range of all other predictors in terms of C.I. are far too close to 1 to compare to **like** with the exception of **attr**.
+    + While **attr** intersects **like** the intersects is not big enough to completely dismiss any possibility of significant difference between them. For this reason we'll still consider **like** as the most relevant with **attr** as dangerously close second. 
 
