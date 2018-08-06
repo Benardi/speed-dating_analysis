@@ -23,6 +23,7 @@ library(tidyverse)
 library(broom)
 library(pscl)
 library(ROCR)
+library(vcd)
 library(here)
 
 theme_set(theme_bw())
@@ -412,6 +413,8 @@ There may be a better model out there but ours does a pretty good job.
 
 # Cross Validation
 
+## ROC Curve
+
 ```{r}
 # Compute AUC for predicting Class with the model
 prob <- predict(bm, newdata=testing_data, type="response")
@@ -421,7 +424,7 @@ perf <- performance(pred, measure = "tpr", x.measure = "fpr")
 autoplot(perf) +
   labs(x="False Positive Rate", 
        y="True Positive Rate",
-       title="True Positive Rate vs False Positive Rate")
+       title="ROC Curve")
 ```
 
 ```{r}
@@ -431,6 +434,36 @@ auc
 ```
 * AUC values above 0.80 indicate that the model does a good job.
 * With a result of $0.863979$ the computed AUC for the predicting Class shows that the model does a good job in discriminating between the two categories which comprise our target variable.
+
+<br>
+
+## Classification Rate
+
+```{r}
+predictions = bm %>% 
+  augment(type.predict = "response") %>% 
+  mutate(acc_to_model = .fitted > .5, 
+         acc_to_data = dec == "yes")
+
+table(predictions$acc_to_model, predictions$acc_to_data)
+```
+
+```{r}
+xtabs(~ acc_to_model + acc_to_data, data = predictions)
+```
+
+```{r}
+mosaic(acc_to_model ~ acc_to_data, data = predictions, 
+       shade = T)
+```
+
+```{r}
+predictions %>%
+ summarise(accuracy = sum(acc_to_model == acc_to_data) / n(),
+           false_positives = n())
+```
+
+* Our model rendered a pretty decent accuracy rate of $0.765925$.
 
 <br>
 
