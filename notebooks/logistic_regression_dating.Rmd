@@ -3,11 +3,11 @@ title: "Logistic Regression on speed dating data"
 author: "José Benardi de Souza Nunes"
 date: 05/08/2018
 output:
-  html_document:
-    df_print: paged
+  html_notebook:
     toc: yes
     toc_float: yes
-  html_notebook:
+  html_document:
+    df_print: paged
     toc: yes
     toc_float: yes
 ---
@@ -30,6 +30,12 @@ library(here)
 
 theme_set(theme_bw())
 ```
+
+<br>
+
+***
+
+<br>
 
 # Data Overview
 
@@ -252,7 +258,6 @@ testing_data %>%
 
 <br>
 
-
 ***
 
 <br>
@@ -362,32 +367,29 @@ Mind now that our $b1 > 0$ or in other words $e^{b1} > 1$, therefore it will hav
 
 <br>
 
-# Model with candidate predictors
+# Analysis Questions
+
+<br>
+
+> Which factors (predictors) have a significant effect on the chance of p1 deciding to meet with p2 again? Are their effect positive or negative?
+
+> Which factor (predictor) has the most effect (relevance) on the chance of p1 deciding to meet with p2 again?
+
+<br>
+
+***
+
+<br>
+
+# Logistic Regression
 
 ```{r}
 glm(dec ~ like + fun + attr + shar + sinc + prob + amb + intel + intel * shar,
       data = training_data, 
       family = "binomial") -> bm
 
-tidy(bm, conf.int = TRUE) %>% 
-  select(-statistic, -p.value)
-```
-
-```{r}
-# EXPONENTIATING:
-tidy(bm, conf.int = TRUE, exponentiate = TRUE) %>%
-  select(-statistic, -p.value)
-```
-
-```{r}
 glance(bm)
 ```
-
-```{r}
-pR2(bm)
-```
-
-* $Rho-squared$ also known as $McFadden's \ pseudo \ R2$ can be interpreted like R2, but its values tend to be considerably lower than those of the R2 index. And values from 0.2-0.4 indicate (in McFadden's words) excellent model fit. Our $0.3221384$ therefore represents an excellent fit in terms of $McFadden's \ pseudo \ R2$.
 
 <br>
 
@@ -591,7 +593,99 @@ There may be a better model out there but ours does a pretty good job.
 
 <br>
 
+## Model Coefficients
+
+```{r}
+tidy(bm, conf.int = TRUE)
+```
+
+```{r}
+broom::tidy(bm,
+            conf.int = TRUE,
+            conf.level = 0.95) %>%
+  filter(term != "(Intercept)") %>%
+  ggplot(aes(term, estimate,
+             ymin = conf.low,
+             ymax = conf.high)) +
+  geom_errorbar(size = 0.8, width= 0.4) +
+  geom_point(color = "red", size = 2) +
+  geom_hline(yintercept = 0, colour = "darkred") +
+  labs(x = "Predictor variable",
+       title = "Logistic regression terms",
+       y = expression(paste("estimated ", 'b'," (95% confidence)")))
+```
+
+The coefficients here follow a generalization of the formula $$\normalsize log(\frac{P(y\ | \ x)}{1 - P(y\ | \ x)}) =b_{0}+b_{1} \cdot x_{1} \;$$
+
+This particular alternative doesn't give a clear idea on the magnitude of the coefficients' effect. There are however some things that can be extracted:
+
+* **intel** and **shar * intel** have no significant effect as (their C.I) regarding $b$ intersect 0.
+* **amb, attr, fun, like, prob, shar** and **sinc** have significant effect as (their C.I) don't intersect 1.
+    + **amb** and **sinc** have a negative effect on the on the response variable.
+    + **attr, fun, like ,prob** and **shar** have a positive effect on the response variable.
+
+<br>
+
+* **like** and **attr** seem to have the highest effect on the response variable, farthest from 0.
+    + Despite intersection with **attr**, **like** seems to have the biggest impact on the response variable.
+    
+<br>
+
+```{r}
+# EXPONENTIATING:
+tidy(bm, conf.int = TRUE, exponentiate = TRUE)
+```
+
+```{r}
+broom::tidy(bm,
+            conf.int = TRUE,
+            conf.level = 0.95,
+            exponentiate = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  ggplot(aes(term, estimate,
+             ymin = conf.low,
+             ymax = conf.high)) +
+  geom_errorbar(size = 0.8, width= 0.4) +
+  geom_point(color = "red", size = 2) +
+  geom_hline(yintercept = 1, colour = "darkred") +
+  labs(x = "Predictor variable",
+       title = "Exponentiated logistic regression terms",
+       y = expression(paste("estimated ", 'e'^{'b'}," (95% confidence)"))) +
+  ylim(0,4)
+```
+
+The coefficients here follow a generalization of the formula $$\normalsize \frac{P(y\ | \ x)}{1 - P(y \ | \ x)} =e^{b_{0}+b_{1} \cdot x_{1}} \;$$
+
+As mentioned in the previous section when $e^{b} > 1$ its effect is positive and when $e^{b} < 1$ it has a negative effect. Therefore:
+
+* **intel** and **shar * intel** have no significant effect as (their C.I) intersect 1.
+
+* **amb, attr, fun, like, prob, shar** and **sinc** have significant effect as (their C.I) don't intersect 1.
+    + **amb** and **sinc** have a negative effect on the **oodratio** of $dec = 1$ over $dec = 0$.
+    + **attr, fun, like ,prob** and **shar** have a positive effect on the **oodratio** of $dec = 1$ over $dec = 0$.
+
+<br>
+
+A multiplier of negative effect is strongest _the farther it's from 1 and the closer it's to 0_ while A multiplier of positive effect is strongest _the farther it's from 1 and the closer it's to $+\infty$_.
+
+<br>
+
+##### The predictor **like** is the most relevant of the candidates i.e. it's the one has that the most effect on the chance of p1 deciding to meet with p2 again. 
+
+* The predictor **like**'s estimate range is the farthest from 1. To have an idea C.I for **like** is around 3 so it's basically tripling the **oddratio** when $like = 1$. 
+* To have a multiplier of negative effect comparable to **like** its C.I. would need to be around $\frac{1}{3}$, so it would cut by three the **oddratio** when its value is 1 the same way **like** triples it when $like = 1$. 
+* As we can see in the plot the range of all other predictors in terms of C.I. are far too close to 1 to compare to **like** with the exception of **attr**.
+    + While **attr** intersects **like** the intersection is not big enough to completely dismiss any possibility of significant difference between them. For this reason we'll still consider **like** as the most relevant with **attr** as dangerously close second. 
+
+<br>
+
+***
+
+<br>
+
 # Cross Validation
+
+<br>
 
 ## ROC Curve
 
@@ -647,47 +741,31 @@ predictions %>%
 
 <br>
 
+## McFadden's pseudo R2
+
+```{r}
+pR2(bm)
+```
+
+* $Rho-squared$ also known as $McFadden's \ pseudo \ R2$ can be interpreted like R2, but its values tend to be considerably lower than those of the R2 index. And values from 0.2-0.4 indicate (in McFadden's words) excellent model fit. Our $0.3221384$ therefore represents an excellent fit in terms of $McFadden's \ pseudo \ R2$.
+
+<br>
+
+***
+
+<br>
+
 # Conclusion
 
 <br>
-
-##### Our two questions are:
-
-<br>
-
-> Which factors (predictors) have a significant effect on the chance of p1 deciding to meet with p2 again? Are their effect positive or negative?
-
-> Which factor (predictor) has the most effect (relevance) on the chance of p1 deciding to meet with p2 again?
-
-```{r}
-broom::tidy(bm,
-            conf.int = TRUE,
-            conf.level = 0.95,
-            exponentiate = TRUE) %>%
-  filter(term != "(Intercept)") %>%
-  ggplot(aes(term, estimate,
-             ymin = conf.low,
-             ymax = conf.high)) +
-  geom_errorbar(size = 0.8, width= 0.4) +
-  geom_point(color = "red", size = 2) +
-  geom_hline(yintercept = 1, colour = "darkred") +
-  labs(x = "Predictor variable",
-       title = "Exponentiated logistic regression terms",
-       y = expression(paste("estimated ", 'e'^{'B'}," (95% confidence)"))) +
-  ylim(0,4)
-```
 
 ## Significance
 
 <br>
 
-As mentioned in the previous section when $e^{b1} > 1$ its effect is positive and when $e^{b1} < 1$ it has a negative effect. Therefore:
-
-* **intel** and **shar * intel** have no significant effect as (their C.I) intersect 1.
-
-* **amb, attr, fun, like, prob, shar** and **sinc** have significant effect as (their C.I) don't intersect 1.
+* **amb, attr, fun, like, prob, shar** and **sinc** have significant effect as (their C.I) don't intersect 1 in terms of $e^{b}$ nor 0 in terms of $b$.
     + **amb** and **sinc** have a negative effect on the **oodratio** of $dec = 1$ over $dec = 0$.
-    + **attr, fun, like ,prob** and **shar** have a positive effect on the **oodratio** of $dec = 1$ over $dec = 0$.
+    + **attr, fun, like ,prob** and **shar** have a positive effect on the **oddratio** of $dec = 1$ over $dec = 0$.
 
 <br>
 
@@ -695,14 +773,5 @@ As mentioned in the previous section when $e^{b1} > 1$ its effect is positive an
 
 <br>
 
-A multiplier of negative effect is strongest _the farther it's from 1 and the closer it's to 0_ while A multiplier of positive effect is strongest _the farther it's from 1 and the closer it's to $+\infty$_.
-
-<br>
-
-##### The predictor **like** is the most relevant of the candidates i.e. it's the one has that the most effect on the chance of p1 deciding to meet with p2 again. 
-
-* The predictor **like**'s estimate range is the farthest from 1. To have an idea C.I for **like** is around 3 so it's basically tripling the **oddratio** when $like = 1$. 
-* To have a multiplier of negative effect comparable to **like** its C.I. would need to be around $\frac{1}{3}$, so it would cut by three the **oddratio** when its value is 1 the same way **like** triples it when $like = 1$. 
-* As we can see in the plot the range of all other predictors in terms of C.I. are far too close to 1 to compare to **like** with the exception of **attr**.
-    + While **attr** intersects **like** the intersects is not big enough to completely dismiss any possibility of significant difference between them. For this reason we'll still consider **like** as the most relevant with **attr** as dangerously close second. 
-
+* The predictor **like** is the most relevant of the candidates i.e. it's the one has that the most effect on the chance of p1 deciding to meet with p2 again with **attr** close as second. 
+    + Despite intersection we opted to choose **like** as winner for we judged their intersection was not big enough to dismiss the possibility of difference between them.
