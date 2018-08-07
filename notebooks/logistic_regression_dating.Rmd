@@ -3,11 +3,11 @@ title: "Logistic Regression on speed dating data"
 author: "José Benardi de Souza Nunes"
 date: 05/08/2018
 output:
-  html_document:
-    df_print: paged
+  html_notebook:
     toc: yes
     toc_float: yes
-  html_notebook:
+  html_document:
+    df_print: paged
     toc: yes
     toc_float: yes
 ---
@@ -21,6 +21,7 @@ output:
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(ggfortify)
+library(gridExtra)
 library(broom)
 library(pscl)
 library(ROCR)
@@ -309,26 +310,119 @@ pR2(bm)
 
 <br>
 
-## Residue Analysis
+## Residual Analysis
 
 <br>
 
-> Residue Analysis can be very hard to use to help you understand what is going on with your logistic regression model. So we should take what they say with a grain of salt and probably give more weight to what $McFadden's \ pseudo \ R2$ said.
+> Residual Analysis can be very hard to use to help you understand what is going on with your logistic regression model. So we should take what they say with a grain of salt and probably give more weight to what $McFadden's \ pseudo \ R2$ said.
 
 <br>
 
-Let's keep the residue data in a specific data frame
+Let's keep the residual data in a specific data frame
 
 ```{r}
 mod.res <- resid(bm)
 std.resid <- rstandard(bm)
 dec <- training_data$dec
 
-resid_data <- data.frame(mod.res,std.resid,dec,
+resid_data <- data.frame(mod.res,std.resid,training_data,
                        stringsAsFactors=FALSE)
 resid_data %>% 
   sample_n(10)
 ```
+
+### Against each predictor
+
+```{r}
+resid_data %>% 
+  ggplot(aes(intel,mod.res)) + 
+  geom_point(alpha=0.4) + 
+  labs(x = "Predictor Intelligence (intel)",
+       y = "Model Residual") -> intel_resid
+
+resid_data %>% 
+  ggplot(aes(fun,mod.res)) + 
+  geom_point(alpha=0.4) + 
+  labs(x = "Predictor Funny (fun)",
+       y = "Model Residual") -> fun_resid
+
+gridExtra::grid.arrange(intel_resid,
+                        fun_resid, 
+                        ncol = 2)
+```
+
+* No alarming results in terms of extreme values, obviously non-linear patterns nor heteroscedasticity.
+
+```{r}
+resid_data %>% 
+  ggplot(aes(attr,mod.res)) + 
+  geom_point(alpha=0.4) +
+  labs(x = "Predictor Attractiveness (attr)",
+       y = "Model Residual") -> attr_resid
+
+resid_data %>% 
+  ggplot(aes(amb,mod.res)) + 
+  geom_point(alpha=0.4) +
+  labs(x = "Predictor Ambition (amb)",
+       y = "Model Residual") -> amb_resid
+
+gridExtra::grid.arrange(attr_resid,
+                        amb_resid, 
+                        ncol = 2)
+```
+
+* No alarming results in terms of extreme values, obviously non-linear patterns nor heteroscedasticity.
+
+```{r}
+resid_data %>% 
+  ggplot(aes(sinc,mod.res)) + 
+  geom_point(alpha=0.4) +
+  labs(x = "Predictor Sincerity (sinc)",
+       y = "Model Residual") -> sinc_resid
+
+resid_data %>% 
+  ggplot(aes(like,mod.res)) + 
+  geom_point(alpha=0.4) + 
+  labs(x = "Predictor Like (like)",
+       y = "Model Residual") -> like_resid
+
+gridExtra::grid.arrange(sinc_resid, 
+                        like_resid,
+                        ncol=2)
+```
+
+* No alarming results in terms of extreme values, obviously non-linear patterns nor heteroscedasticity.
+
+```{r}
+resid_data %>% 
+  ggplot(aes(shar,mod.res)) + 
+  geom_point(alpha=0.4) +
+  labs(x = "Predictor Shared (shar)",
+       y = "Model Residual") -> shar_resid
+
+resid_data %>% 
+  ggplot(aes(prob,mod.res)) + 
+  geom_point(alpha=0.4) + 
+  labs(x = "Predictor Probability (prob)",
+       y = "Model Residual") -> prob_resid
+
+gridExtra::grid.arrange(shar_resid, 
+                        prob_resid,
+                        ncol=2)
+```
+
+* No alarming results in terms of extreme values, obviously non-linear patterns nor heteroscedasticity.
+
+<br>
+
+#### Looking at each predictor against the model residual we can say:
+
+* They’re not symmetrically distributed, nor they tend to cluster towards the middle of the plot.
+* They’re relatively clustered around the lower single digits of the y-axis (e.g., ideally would be 0.5 or 1.5), while not ideal it could be worse.
+
+
+
+### Against whole model
 
 ```{r}
 bm %>%
