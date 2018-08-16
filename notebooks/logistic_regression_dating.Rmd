@@ -1,5 +1,6 @@
 ---
-title: "Logistic Regression on speed dating data"
+title: "Multivariate logistic regression on speed dating data"
+subtitle: "An analysis with multivariate logistic regression on data from a speed dating experiment from Columbia Business School"
 author: "José Benardi de Souza Nunes"
 date: 05/08/2018
 output:

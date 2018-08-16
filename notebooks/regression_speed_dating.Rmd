@@ -1,5 +1,6 @@
 ---
-title: "Regression on speed dating data"
+title: "Multivariate linear regression on speed dating data"
+subtitle: "An analysis with multivariate linear regression on data from a speed dating experiment from Columbia Business School"
 author: "José Benardi de Souza Nunes"
 date: 29/07/2018
 output:
@@ -14,7 +15,7 @@ output:
 
 <br>
 
-> This report contains regression models created based on data describing 5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
+> This report contains regression models created based on data describing 5000 speed dates of 4 minutes of duration involving 310 american young adults. The original data were collected by Columbia Business School professors. Further information and the data itself can be found in this [report repository](https://github.com/Benardi/speed-dating_analysis).
 
 <br>
 
