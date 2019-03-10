@@ -1,17 +1,18 @@
-# speed-dating_analysis
-Analysis through regression on speed dating data 
+[![Build Status](https://img.shields.io/badge/R%3E%3D-3.3.3-6666ff.svg)](https://cran.r-project.org/doc/FAQ/R-FAQ.html)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+# Speed Dating Analysis
+Analysis through linear and logistic regression on data from a speed dating experiment from Columbia Business School.
 
 ## The data
 We have data describing 5000 4 minutes speed dates involving 310 american young adults. The original data were collected by Columbia Business professors
 
 The participants had several 4 minutes dates by night. After each one, they filled forms evaluating those they had dated. Each row in the data represents one of these dates.
 
-## The questions
+### The questions
 What attracts at first sight? And how this changes on different genders? People of different backgrounds? What characteristics are more and less important for a man/woman to be noticed? 
 
-## The variables
-
-**Warning** : Be sure to use variables of the correct type (character x number) and deal with NAs.
+### The variables
 
 - iid : id of the participant p1 in the date
 - gender : gender of p1, 0 = woman
@@ -44,4 +45,34 @@ What attracts at first sight? And how this changes on different genders? People 
 
 Good part of the data comes from here:
 ![formulário preenchido pelos usuários](data/form.png "O formulário")
+
+## Prerequisites
+
+* `R >= 3.3.3`
+
+* tidyverse
+* ggfortify
+* gridExtra
+* broom
+* modelr
+* GGally
+* caret
+* here
+* ROCR
+* pscl
+* vcd
+
+
+
+## Execution
+
+The R notebooks reside in the *notebooks* directory, and ideally should be run under the Rstudio IDE.
+
+## Authors
+
+* **Benardi Nunes** - *Initial work* - [Benardi](https://github.com/Benardi)
+
+## License
+
+This project is licensed under the GPL v3 License - see the [LICENSE.md](LICENSE.md) file for details
 
